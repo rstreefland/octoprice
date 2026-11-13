@@ -15,7 +15,7 @@ That's why I decided to create the Octoprice App.
 ## Features
 
 - visualize the energy consumption pattern in the past year
-  
+
   ![octopast](https://github.com/edward-designer/dataviz/assets/25171685/d0204b4e-86cc-49ca-8af1-891cc4cb3f17)
 
 - get the latest unit rates details for different intelligent tariffs (in pratical the half-hourly rates for Agile) with sensible comparisions for informed decision / choice
@@ -52,3 +52,25 @@ That's why I decided to create the Octoprice App.
 
 - improve accessibility
 - turn into a real iOS/Andriod app with system notifications and widgets
+
+## Deployment
+
+The site is hosted at https://octoprice.streefland.co.uk using GitHub Pages.
+Pushes to `main` and manual runs of `.github/workflows/pages.yml` build a Next.js
+static export and deploy the `out` directory using the official GitHub Pages
+actions, matching `saving-session-explorer`.
+
+Use the pnpm version declared in `package.json`:
+
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build
+pnpm exec tsc --noEmit
+```
+
+Demo consumption is generated locally from deterministic synthetic values. It does
+not represent a real household. Real account data is fetched directly from the
+Octopus API in the browser. No server routes or private deployment API keys are
+required.

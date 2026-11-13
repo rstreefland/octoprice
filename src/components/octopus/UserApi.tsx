@@ -27,7 +27,7 @@ export type ErrorType = Record<string, string>;
 const UserApi = () => {
   const [open, setOpen] = useState(false);
   const { value, setValue } = useContext(UserContext);
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "");
 
   return (
     <>
@@ -70,7 +70,7 @@ const UserApi = () => {
               className="text-sm px-1 py-1 mr-2"
             />{" "}
             <em>Not yet an Octopus user or feeling sceptical?</em> Just try it
-            out with dummy data:
+            out with synthetic sample consumption data:
           </p>
           <Button
             variant="action"

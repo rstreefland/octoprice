@@ -15,7 +15,7 @@ import { TbTools } from "react-icons/tb";
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExtended, setIsExtended] = useState(false);
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "");
   const { value } = useContext(UserContext);
 
   useEffect(() => setIsOpen(false), [pathname]);

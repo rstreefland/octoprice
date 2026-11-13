@@ -4,6 +4,7 @@ import {
   TariffCategory,
   TariffType,
 } from "@/data/source";
+import { createDemoConsumption } from "@/utils/demoConsumption";
 import { fillMissingDays } from "@/utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 
@@ -57,7 +58,7 @@ const useConsumptionData = (inputs: IUseConsumptionData) => {
             ENERGY_TYPE[type]
           }-meter-points/${deviceNumber}/meters/${serialNo}/consumption/?period_from=${fromISODate.replace(
             ".000",
-            ""
+            "",
           )}&period_to=${toISODate.replace(".000", "")}&page_size=25000${
             groupBy[category]
           }`
@@ -65,7 +66,7 @@ const useConsumptionData = (inputs: IUseConsumptionData) => {
             ENERGY_TYPE[type]
           }-meter-points/${deviceNumber}/meters/${serialNo}/consumption/?period_from=${fromISODate.replace(
             ".000",
-            ""
+            "",
           )}&period_to=${toISODate.replace(".000", "")}&page_size=25000${
             groupBy[category]
           }`;
@@ -73,23 +74,12 @@ const useConsumptionData = (inputs: IUseConsumptionData) => {
     try {
       // page_size 25000 is a year's data
       if (testRun) {
-        const response = await fetch(
-          `/api/data?fromISODate=${fromISODate.replace(
-            ".000",
-            ""
-          )}&toISODate=${toISODate.replace(
-            ".000",
-            ""
-          )}&category=${category}&type=${type}&groupBy=${groupByType}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Sorry the request was unsuccessful");
-        return response.json();
+        return createDemoConsumption({
+          fromISODate,
+          toISODate,
+          type,
+          halfHourly: groupByType === "halfhour",
+        });
       } else {
         const response = await fetch(url, {
           method: "GET",
