@@ -60,10 +60,6 @@ Pushes to `main` and manual runs of `.github/workflows/pages.yml` build a Next.j
 static export and deploy the `out` directory using the official GitHub Pages
 actions, matching `saving-session-explorer`.
 
-Enable GitHub Pages with **GitHub Actions** as the source, set the custom domain to
-`octoprice.streefland.co.uk`, and enable HTTPS once its certificate is ready.
-The DNS CNAME record for `octoprice` must point to `rstreefland.github.io`.
-
 Use the pnpm version declared in `package.json`:
 
 ```sh
