@@ -1,11 +1,14 @@
 "use client";
+import { TariffUnavailable } from "./TariffUnavailable";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import Tariff from "./Tariff";
 
-import { ETARIFFS } from "@/data/source";
-
 const CosyTariff = () => {
-  const currentTariff = ETARIFFS.find((tariff) => tariff.category === "Cosy")!;
+  const { electricity: ETARIFFS } = useTariffCatalogue();
+  const currentTariff = ETARIFFS.find((tariff) => tariff.category === "Cosy");
+  if (!currentTariff) return <TariffUnavailable />;
+
   return <Tariff tariff={currentTariff} />;
 };
 

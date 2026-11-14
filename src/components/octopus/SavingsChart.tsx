@@ -1,13 +1,9 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import Badge from "@/components/octopus/Badge";
 import Comparison from "@/components/octopus/Comparison";
-import {
-  ENERGY_TYPE,
-  IPeriod,
-  SVT_ETARIFF,
-  TariffCategory,
-} from "@/data/source";
+import { ENERGY_TYPE, IPeriod, TariffCategory } from "@/data/source";
 
 import { saveAs } from "file-saver";
 import html2canvas from "html2canvas";
@@ -61,6 +57,7 @@ const SavingsChart = ({
   dual?: boolean;
   testRun?: boolean;
 }) => {
+  const { variableCode: SVT_ETARIFF } = useTariffCatalogue();
   const imageRef = useRef<HTMLDivElement | null>(null);
 
   const today = new Date();

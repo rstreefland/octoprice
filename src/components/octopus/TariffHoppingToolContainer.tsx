@@ -1,4 +1,6 @@
 "use client";
+import { getInitialTariffHoppingSelection } from "@/utils/tariffCatalogue";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import dynamic from "next/dynamic";
 
@@ -27,7 +29,7 @@ import Loading from "@/app/loading";
 
 import { TbChartInfographic } from "react-icons/tb";
 
-import { EETARIFFS, ETARIFFS, IPeriod } from "@/data/source";
+import { IPeriod } from "@/data/source";
 import useCalculateSimPrice from "@/hooks/useCalculateSimPrice";
 import useEnergyShiftData from "@/hooks/useEnergyShiftData";
 import { energyShiftReducer } from "@/reducers/energyShift";
@@ -40,6 +42,7 @@ import ExitTrialButton from "./ExitTrialButton";
 export type ErrorType = Record<string, string>;
 
 const TariffHoppingToolContainer = () => {
+  const { exports: EETARIFFS, electricity: ETARIFFS } = useTariffCatalogue();
   /* states */
   const { value, setValue } = useContext(UserContext);
 
@@ -48,56 +51,64 @@ const TariffHoppingToolContainer = () => {
 
   const [importTariff, setImportTariff] = useState<string>("");
   const [exportTariff, setExportTariff] = useState<string>("");
-  const [importTariff2, setImportTariff2] = useState<string>(
-    ETARIFFS.filter((tariff) => tariff.category === "Agile")?.[0].tariff ?? ""
+  const isExporting = !!(value.EESerialNo && value.EMPAN);
+  const [comparisonSelection, setComparisonSelection] = useState(() =>
+    getInitialTariffHoppingSelection({
+      savedImport: value.tariffHoppingSet2,
+      savedExport: value.tariffHoppingExportSet2,
+      isExporting,
+      electricity: ETARIFFS,
+      exports: EETARIFFS,
+    })
   );
-  const [exportTariff2, setExportTariff2] = useState<string>("");
+  const { importTariff: importTariff2, exportTariff: exportTariff2 } =
+    comparisonSelection;
+  const setImportTariff2 = (tariff: string) =>
+    setComparisonSelection((current) => ({ ...current, importTariff: tariff }));
+  const setExportTariff2 = (tariff: string) =>
+    setComparisonSelection((current) => ({ ...current, exportTariff: tariff }));
 
   /* derived states */
-  const isExporting = !!(value.EESerialNo && value.EMPAN);
-
-  useEffect(() => {
-    if (isExporting) {
-      setImportTariff2(
-        ETARIFFS.filter((tariff) => tariff.category === "IFlux")?.[0].tariff ??
-          "INTELLI-FLUX-IMPORT-23-07-14"
-      );
-      setExportTariff2(
-        EETARIFFS.filter((tariff) => tariff.category === "IFlux")?.[0].tariff ??
-          "INTELLI-FLUX-EXPORT-23-07-14"
-      );
-    }
-  }, [isExporting]);
-
   useEffect(() => {
     if (value.tariffHoppingSet2 !== "") {
-      setImportTariff2(value.tariffHoppingSet2);
+      setComparisonSelection((current) => ({
+        ...current,
+        importTariff: value.tariffHoppingSet2,
+      }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.tariffHoppingSet2]);
 
   useEffect(() => {
     if (value.tariffHoppingExportSet2 !== "") {
-      setExportTariff2(value.tariffHoppingExportSet2);
+      setComparisonSelection((current) => ({
+        ...current,
+        exportTariff: value.tariffHoppingExportSet2,
+      }));
     }
   }, [value.tariffHoppingExportSet2]);
 
   useEffect(() => {
-    setValue({ ...value, tariffHoppingSet2: importTariff2 });
+    if (
+      value.tariffHoppingSet2 !== importTariff2 ||
+      value.tariffHoppingExportSet2 !== exportTariff2
+    ) {
+      setValue({
+        ...value,
+        tariffHoppingSet2: importTariff2,
+        tariffHoppingExportSet2: exportTariff2,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [importTariff2]);
-
-  useEffect(() => {
-    setValue({ ...value, tariffHoppingExportSet2: exportTariff2 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exportTariff2]);
+  }, [importTariff2, exportTariff2]);
 
   const importTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(ETARIFFS, value.currentETariff),
-    [value.currentETariff]
+    [value.currentETariff, ETARIFFS]
   );
   const exportTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(EETARIFFS, value.currentEETariff),
-    [value.currentEETariff]
+    [value.currentEETariff, EETARIFFS]
   );
 
   /* get data from API */

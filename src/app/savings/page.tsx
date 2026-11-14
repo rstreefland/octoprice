@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import SavingsContainer from "@/components/octopus/SavingsContainer";
 
 import { Metadata } from "next";
@@ -42,9 +43,11 @@ export const metadata: Metadata = {
 
 const Savings = () => {
   return (
-    <div className="lg:col-[content] my-4 flex flex-col gap-6 text-lg">
-      <SavingsContainer />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4 flex flex-col gap-6 text-lg">
+        <SavingsContainer />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
@@ -15,7 +16,7 @@ import PricePaneAgile from "./PricePaneAgile";
 import Remark from "./Remark";
 import TariffSelect from "./TariffSelect";
 import MapChart from "@/components/octopus/MapChart";
-import { AGILE, ITariffPlan, QueryProducts } from "@/data/source";
+import { ITariffPlan, QueryProducts } from "@/data/source";
 import PricePaneAgile2 from "./PricePaneAgile2";
 import MapChartAgile from "./MapChartAgile";
 import { WindowResizeContext } from "@/context/windowResize";
@@ -26,6 +27,7 @@ import { TiArrowMaximise } from "react-icons/ti";
 import { TiArrowMinimise } from "react-icons/ti";
 
 const AgileTariff = () => {
+  const { agile: AGILE } = useTariffCatalogue();
   const [tariff, setTariff] = useState(AGILE[0].code);
   const [currentPeriod, setCurrentPeriod] = useState(new Date().toUTCString());
   const [maxChart, setMaxChart] = useState(false);

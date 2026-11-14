@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import EnergyShiftSim from "@/components/octopus/EnergyShiftSim";
 import { Metadata } from "next";
 
@@ -41,9 +42,11 @@ export const metadata: Metadata = {
 
 const MaxSave = () => {
   return (
-    <div className="lg:col-[content] my-4">
-      <EnergyShiftSim />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4">
+        <EnergyShiftSim />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

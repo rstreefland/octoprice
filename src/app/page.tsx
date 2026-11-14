@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import Octopus3d from "@/components/octopus/Octopus3d";
 
 import EnergyPriceCard from "../components/octopus/EnergyPriceCard";
@@ -44,32 +45,34 @@ export const metadata: Metadata = {
 
 const Home = () => {
   return (
-    <div className="lg:col-[content] my-4 flex justify-start items-center relative z-0">
-      <div className="max-w-full w-full min-w-[300px] z-10 mt-20 lg:mt-0 mb-20">
-        <div className="lg:pl-6 lg:translate-y-3 text-sm font-extralight mb-1">
-          Help you compare and select the BEST Octopus Energy electicity, gas
-          and export tariffs for both Android and iPhone users.
-          <br />
-          <strong className="font-bold">
-            Today&apos;s Cheapest Energy Prices:
-          </strong>
-        </div>
-        <div className="flex gap-2 lg:p-4 flex-col lg:flex-row flex-wrap">
-          <EnergyPriceCard type="E" plan="agile" />
-          <EnergyPriceCard type="E" plan="tracker" />
-          <EnergyPriceCard type="G" plan="tracker" />
-        </div>
-        <div className="lg:pl-6 lg:translate-y-3 mt-2 lg:mt-0 text-sm font-extralight mb-1 flex items-center gap-2">
-          <TbTools />
-          <Link
-            href="/whyOctoprice"
-            className="text-accentBlue-500 underline hover:text-accentPink-500 hover:no-underline"
-          >
-            Overview of Exclusive Tools for Octopus Energy Users
-          </Link>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4 flex justify-start items-center relative z-0">
+        <div className="max-w-full w-full min-w-[300px] z-10 mt-20 lg:mt-0 mb-20">
+          <div className="lg:pl-6 lg:translate-y-3 text-sm font-extralight mb-1">
+            Help you compare and select the BEST Octopus Energy electicity, gas
+            and export tariffs for both Android and iPhone users.
+            <br />
+            <strong className="font-bold">
+              Today&apos;s Cheapest Energy Prices:
+            </strong>
+          </div>
+          <div className="flex gap-2 lg:p-4 flex-col lg:flex-row flex-wrap">
+            <EnergyPriceCard type="E" plan="agile" />
+            <EnergyPriceCard type="E" plan="tracker" />
+            <EnergyPriceCard type="G" plan="tracker" />
+          </div>
+          <div className="lg:pl-6 lg:translate-y-3 mt-2 lg:mt-0 text-sm font-extralight mb-1 flex items-center gap-2">
+            <TbTools />
+            <Link
+              href="/whyOctoprice"
+              className="text-accentBlue-500 underline hover:text-accentPink-500 hover:no-underline"
+            >
+              Overview of Exclusive Tools for Octopus Energy Users
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </TariffCatalogueProvider>
   );
 };
 

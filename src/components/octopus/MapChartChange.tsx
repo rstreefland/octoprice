@@ -1,3 +1,4 @@
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 import { useEffect, useRef } from "react";
 
 import Loading from "../Loading";
@@ -11,7 +12,6 @@ import {
   Single_tariff,
   Single_tariff_gsp_record,
   Single_tariff_gsp_record_charge_type,
-  TRACKER,
   gsp,
 } from "@/data/source";
 import useTariffQuery from "@/hooks/useTariffQuery";
@@ -52,6 +52,7 @@ const MapChart = ({
   rate = "standard_unit_rate_inc_vat",
   gsp,
 }: IMapChart) => {
+  const { tracker: TRACKER } = useTariffCatalogue();
   const svgRef = useRef<SVGSVGElement>(null);
   const mapData = useUkGspMapData();
 
@@ -386,6 +387,7 @@ const MapChart = ({
         zoomTransform(svg.node()!).invert([width / 2, height / 2])
       );
   }, [
+    TRACKER,
     mapData,
     data,
     type,

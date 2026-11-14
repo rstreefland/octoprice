@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import React from "react";
 
 import { Metadata } from "next";
@@ -36,7 +37,11 @@ export const metadata: Metadata = {
 };
 
 const Variable = () => {
-  return <VariableTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <VariableTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Variable;

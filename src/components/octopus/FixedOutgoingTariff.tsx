@@ -1,4 +1,6 @@
 "use client";
+import { TariffUnavailable } from "./TariffUnavailable";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import { useContext, useState } from "react";
 
@@ -18,14 +20,14 @@ import Remark from "./Remark";
 
 import { ITariffToCompare, Single_tariff } from "@/data/source";
 
-import { EETARIFFS } from "@/data/source";
 import PricePaneVariable from "./PricePaneVariable";
 
 const FixedOutgoingTariff = () => {
+  const { exports: EETARIFFS } = useTariffCatalogue();
   const currentExportTariff = EETARIFFS.find(
     (tariff) => tariff.category === "Fixed"
-  )!;
-  const { tariff: tariffCode, category } = currentExportTariff;
+  );
+  const tariffCode = currentExportTariff?.tariff ?? "";
 
   const [currentPeriod, setCurrentPeriod] = useState(new Date().toUTCString());
   const { value, setValue } = useContext(UserContext);
@@ -48,6 +50,8 @@ const FixedOutgoingTariff = () => {
     tariff: tariffCode,
     type: "E",
   });
+
+  if (!currentExportTariff) return <TariffUnavailable />;
 
   if (isLoading)
     return (

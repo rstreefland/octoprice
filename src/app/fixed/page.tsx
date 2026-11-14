@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import React from "react";
 
 import { Metadata } from "next";
@@ -34,7 +35,11 @@ export const metadata: Metadata = {
 };
 
 const Fixed = () => {
-  return <FixedTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <FixedTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Fixed;

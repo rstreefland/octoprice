@@ -1,3 +1,4 @@
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 import { useContext, useEffect, useRef } from "react";
 
 import Loading from "../Loading";
@@ -11,7 +12,6 @@ import {
   Single_tariff,
   Single_tariff_gsp_record,
   Single_tariff_gsp_record_charge_type,
-  TRACKER,
   gsp,
 } from "@/data/source";
 import useTariffQuery from "@/hooks/useTariffQuery";
@@ -53,6 +53,7 @@ const MapChart = ({
   gsp,
   dual = false,
 }: IMapChart) => {
+  const { tracker: TRACKER } = useTariffCatalogue();
   const { hiViz } = useContext(HiVizContext);
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -115,11 +116,11 @@ const MapChart = ({
         validDate === new Date().toLocaleDateString("en-GB")
           ? `Today (${validDate})`
           : validDate ===
-            new Date(
-              new Date().setDate(new Date().getDate() - 1)
-            ).toLocaleDateString("en-GB")
-          ? `Yesterday (${validDate})`
-          : `Updated at ${validDate}`;
+              new Date(
+                new Date().setDate(new Date().getDate() - 1)
+              ).toLocaleDateString("en-GB")
+            ? `Yesterday (${validDate})`
+            : `Updated at ${validDate}`;
       svg.select(".info").text(updateDate);
     }
     if (rate === "day_unit_rate_inc_vat") {
@@ -130,11 +131,11 @@ const MapChart = ({
         validDate === new Date().toLocaleDateString("en-GB")
           ? `Today (${validDate}) Peak Rate`
           : validDate ===
-            new Date(
-              new Date().setDate(new Date().getDate() - 1)
-            ).toLocaleDateString("en-GB")
-          ? `Yesterday (${validDate}) Peak Rate`
-          : `Updated at ${validDate}`;
+              new Date(
+                new Date().setDate(new Date().getDate() - 1)
+              ).toLocaleDateString("en-GB")
+            ? `Yesterday (${validDate}) Peak Rate`
+            : `Updated at ${validDate}`;
       svg.select(".info").text(updateDate);
     }
     if (rate === "night_unit_rate_inc_vat") {
@@ -145,11 +146,11 @@ const MapChart = ({
         validDate === new Date().toLocaleDateString("en-GB")
           ? `Today (${validDate}) Off-Peak Rate`
           : validDate ===
-            new Date(
-              new Date().setDate(new Date().getDate() - 1)
-            ).toLocaleDateString("en-GB")
-          ? `Yesterday (${validDate}) Off-Peak Rate`
-          : `Updated at ${validDate}`;
+              new Date(
+                new Date().setDate(new Date().getDate() - 1)
+              ).toLocaleDateString("en-GB")
+            ? `Yesterday (${validDate}) Off-Peak Rate`
+            : `Updated at ${validDate}`;
       svg.select(".info").text(updateDate);
     }
     if (rate === "standing_charge_inc_vat") {
@@ -258,8 +259,8 @@ const MapChart = ({
             ? "#3a63ba"
             : "#13357e"
           : hiViz
-          ? "#00187a"
-          : "#03155e"
+            ? "#00187a"
+            : "#03155e"
       )
       .attr("data-zone", (d) => d.properties?.Name)
       .attr("data-zoneName", (d) => d.properties?.LongName)
@@ -332,8 +333,8 @@ const MapChart = ({
               ? "#3a63ba"
               : "#13357e"
             : hiViz
-            ? "#00187a"
-            : "#03155e"
+              ? "#00187a"
+              : "#03155e"
         );
       })
       .on("pointerleave.zoom", null);
@@ -426,6 +427,7 @@ const MapChart = ({
         zoomTransform(svg.node()!).invert([width / 2, height / 2])
       );
   }, [
+    TRACKER,
     mapData,
     data,
     type,

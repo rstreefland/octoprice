@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import GoTariff from "@/components/octopus/GoTariff";
 import { Metadata } from "next";
 
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 };
 
 const Go = () => {
-  return <GoTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <GoTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Go;

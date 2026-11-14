@@ -29,14 +29,15 @@ import { getGsp } from "@/utils/helpers";
 
 import { IoLocationOutline } from "react-icons/io5";
 import { VscAdd } from "react-icons/vsc";
-import { ETARIFFS, ITariffToCompare } from "@/data/source";
+import { getTariffComparisonKey } from "@/utils/tariffCatalogue";
+import { ITariffToCompare } from "@/data/source";
 import TariffDetails from "./TariffDetails";
 
 export type ErrorType = Record<string, string>;
 
 interface IAddATariff {
   tariffs: ITariffToCompare[];
-  addToTariff: (value: (typeof ETARIFFS)[number]["tariff"]) => void;
+  addToTariff: (value: ITariffToCompare) => void;
 }
 
 const AddATariff = ({ tariffs, addToTariff }: IAddATariff) => {
@@ -44,7 +45,9 @@ const AddATariff = ({ tariffs, addToTariff }: IAddATariff) => {
   const [tariff, setTariff] = useState<string[]>([]);
 
   const submitHandler = () => {
-    tariff.forEach((tariffCode) => addToTariff(tariffCode));
+    tariffs
+      .filter((entry) => tariff.includes(getTariffComparisonKey(entry)))
+      .forEach(addToTariff);
     setTariff([]);
     setOpen(false);
   };
@@ -72,13 +75,13 @@ const AddATariff = ({ tariffs, addToTariff }: IAddATariff) => {
           <div className="flex flex-col text-2xl font-thin">
             {tariffs.map((tariff) => (
               <label
-                key={tariff.tariff}
+                key={getTariffComparisonKey(tariff)}
                 className="flex gap-2 items-center [&:has(:checked)]:text-accentPink-500 [&:has(:checked)]:font-bold"
               >
                 <input
                   type="checkbox"
                   name="tariff"
-                  value={tariff.tariff}
+                  value={getTariffComparisonKey(tariff)}
                   className="w-4 h-4 accent-accentPink-500"
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setTariff((tariff) =>
@@ -94,10 +97,10 @@ const AddATariff = ({ tariffs, addToTariff }: IAddATariff) => {
                 {tariff.category === "E7"
                   ? "Economy 7"
                   : tariff.category === "IGo"
-                  ? "Intelligent Go"
-                  : tariff.category === "IFlux"
-                  ? "Intelligent Flux"
-                  : tariff.category}
+                    ? "Intelligent Go"
+                    : tariff.category === "IFlux"
+                      ? "Intelligent Flux"
+                      : tariff.category}
               </label>
             ))}
           </div>

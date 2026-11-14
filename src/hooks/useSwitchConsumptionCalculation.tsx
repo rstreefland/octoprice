@@ -107,6 +107,7 @@ const useConsumptionCalculation = (inputs: IConsumptionCalculator) => {
       value.gsp,
       fromDataISODate,
       toDataISODate,
+      false,
     ],
     queryFn: queryFnStandingChargeData,
     enabled: true,

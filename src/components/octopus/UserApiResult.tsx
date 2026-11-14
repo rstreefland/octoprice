@@ -1,7 +1,8 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import { UserContext } from "@/context/user";
-import { EETARIFFS, ETARIFFS, GTARIFFS } from "@/data/source";
+
 import { useContext, useState } from "react";
 import NotCurrentlySupported from "./NotCurrentlySupported";
 
@@ -16,6 +17,12 @@ import Remark from "./Remark";
 import ExitTrialButton from "./ExitTrialButton";
 
 const UserApiResult = () => {
+  const {
+    exports: EETARIFFS,
+    electricity: ETARIFFS,
+    gas: GTARIFFS,
+    variableCode,
+  } = useTariffCatalogue();
   const { value } = useContext(UserContext);
 
   const { currentType, Tabs } = useTypeTabs();
@@ -86,7 +93,7 @@ const UserApiResult = () => {
               allTariffs={[
                 ...ETARIFFS,
                 {
-                  tariff: "VAR-BB-23-04-01",
+                  tariff: variableCode,
                   type: "E",
                   category: "E7",
                   cost: null,

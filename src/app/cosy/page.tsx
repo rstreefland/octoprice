@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import CosyTariff from "@/components/octopus/CosyTariff";
 import { Metadata } from "next";
 
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 };
 
 const Cosy = () => {
-  return <CosyTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <CosyTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Cosy;

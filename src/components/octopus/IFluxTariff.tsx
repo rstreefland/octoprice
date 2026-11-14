@@ -1,14 +1,26 @@
 "use client";
+import { TariffUnavailable } from "./TariffUnavailable";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import ExportTariff from "./ExportTariff";
-
-import { ETARIFFS, EETARIFFS } from "@/data/source";
+import Tariff from "./Tariff";
 
 const IFluxTariff = () => {
-  const currentTariff = ETARIFFS.find((tariff) => tariff.category === "IFlux")!;
+  const { electricity: ETARIFFS, exports: EETARIFFS } = useTariffCatalogue();
+  const currentTariff = ETARIFFS.find((tariff) => tariff.category === "IFlux");
   const currentExportTariff = EETARIFFS.find(
     (tariff) => tariff.category === "IFlux"
-  )!;
+  );
+
+  if (!currentTariff) return <TariffUnavailable />;
+  if (!currentExportTariff) {
+    return (
+      <>
+        <TariffUnavailable name="The export tariff" />
+        <Tariff tariff={currentTariff} />
+      </>
+    );
+  }
 
   return (
     <ExportTariff

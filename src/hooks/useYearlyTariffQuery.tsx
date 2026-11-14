@@ -35,12 +35,12 @@ function useYearlyTariffQuery<T>({
     toDate,
     category,
     enabled,
-    dual
+    dual,
   });
 
   const query = useQuery<T[]>({
     enabled,
-    queryKey: ["getYearlyTariff", tariff, type, gsp, fromDate, toDate],
+    queryKey: ["getYearlyTariff", tariff, type, gsp, fromDate, toDate, dual],
     queryFn,
   });
   return query;

@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import TrackerTariff from "@/components/octopus/TrackerTariff";
 import { Metadata } from "next";
 
@@ -33,7 +34,11 @@ export const metadata: Metadata = {
 };
 
 const Tracker = () => {
-  return <TrackerTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <TrackerTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Tracker;
