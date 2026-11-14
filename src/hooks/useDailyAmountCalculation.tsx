@@ -1,6 +1,7 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 import { UserContext } from "@/context/user";
-import { ENERGY_TYPE, ETARIFFS, GTARIFFS, gsp } from "@/data/source";
+import { ENERGY_TYPE, gsp } from "@/data/source";
 import { getCategory } from "@/utils/helpers";
 import { useQueries } from "@tanstack/react-query";
 import { useContext } from "react";
@@ -47,6 +48,7 @@ export type IDailyAmountCalculation = {
 };
 
 const useDailyAmountCalculation = (inputs: IDailyAmountCalculation) => {
+  const { electricity: ETARIFFS, gas: GTARIFFS } = useTariffCatalogue();
   const {
     type,
     periodWithTariff,
@@ -80,8 +82,8 @@ const useDailyAmountCalculation = (inputs: IDailyAmountCalculation) => {
     type === "E"
       ? ETARIFFS.find((tariff) => tariff.category === "SVT")?.tariff
       : type === "G"
-      ? GTARIFFS.find((tariff) => tariff.category === "SVT")?.tariff
-      : null;
+        ? GTARIFFS.find((tariff) => tariff.category === "SVT")?.tariff
+        : null;
 
   if (SVTtariff) uniqueTariffCodes.push(SVTtariff);
 

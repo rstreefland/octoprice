@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 import {
   UseQueryResult,
   useQuery,
@@ -15,8 +16,6 @@ import {
   DurationType,
   ENERGY_PLAN,
   GSP,
-  TRACKER,
-  AGILE,
 } from "@/data/source";
 
 import { fetchApi } from "../utils/helpers";
@@ -32,6 +31,7 @@ function useCheapestTariffQuery<T>({
   gsp?: string;
   duration?: DurationType;
 }): UseQueryResult<T[], Error> {
+  const { tracker: TRACKER, agile: AGILE } = useTariffCatalogue();
   const tariff = plan === "tracker" ? TRACKER[0].code : AGILE[0].code;
 
   const queryClient = useQueryClient();

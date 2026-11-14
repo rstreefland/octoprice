@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc --outDir .test-output --module commonjs --target es2015 --skipLibCheck src/utils/demoConsumption.test.ts && node --test .test-output/demoConsumption.test.js"
+    "test": "tsc --outDir .test-output --module commonjs --moduleResolution node --target es2015 --skipLibCheck --esModuleInterop --resolveJsonModule src/utils/demoConsumption.test.ts src/utils/tariffCatalogue.test.ts && node --test .test-output/demoConsumption.test.js .test-output/tariffCatalogue.test.js"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

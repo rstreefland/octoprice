@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import Image from "next/image";
 
 import Providers from "./providers";
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Header from "@/components/Header";
@@ -122,7 +123,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <ReactQueryDevtools initialIsOpen={false} />
               <div className="min-h-screen p-4 pt-0 lg:grid grid-rows-[100px_1fr_200px] lg:py-0 lg:p-0 lg:grid-cols-[[fullwidth_start]_minmax(0,5%)_[breakout_start]_minmax(0,5%)_[content_start]_minmax(1000px,_1fr)_[content_end]_minmax(0,5%)_[breakout_end]_minmax(0,5%)_[fullwidth_end]]">
                 <Header className="lg:col-[content]" />
-                {children}
+                <TariffCatalogueProvider>{children}</TariffCatalogueProvider>
                 <GoogleAnalytics ga_id="G-NQX4NLSBPE" />
                 <footer className="lg:col-[content] text-sm font-light text-white/60 mt-16">
                   <a

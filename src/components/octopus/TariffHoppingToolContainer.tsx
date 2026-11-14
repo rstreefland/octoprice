@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import dynamic from "next/dynamic";
 
@@ -27,7 +28,7 @@ import Loading from "@/app/loading";
 
 import { TbChartInfographic } from "react-icons/tb";
 
-import { EETARIFFS, ETARIFFS, IPeriod } from "@/data/source";
+import { IPeriod } from "@/data/source";
 import useCalculateSimPrice from "@/hooks/useCalculateSimPrice";
 import useEnergyShiftData from "@/hooks/useEnergyShiftData";
 import { energyShiftReducer } from "@/reducers/energyShift";
@@ -40,6 +41,7 @@ import ExitTrialButton from "./ExitTrialButton";
 export type ErrorType = Record<string, string>;
 
 const TariffHoppingToolContainer = () => {
+  const { exports: EETARIFFS, electricity: ETARIFFS } = useTariffCatalogue();
   /* states */
   const { value, setValue } = useContext(UserContext);
 
@@ -49,7 +51,7 @@ const TariffHoppingToolContainer = () => {
   const [importTariff, setImportTariff] = useState<string>("");
   const [exportTariff, setExportTariff] = useState<string>("");
   const [importTariff2, setImportTariff2] = useState<string>(
-    ETARIFFS.filter((tariff) => tariff.category === "Agile")?.[0].tariff ?? ""
+    ETARIFFS.find((tariff) => tariff.category === "Agile")?.tariff ?? ""
   );
   const [exportTariff2, setExportTariff2] = useState<string>("");
 
@@ -59,15 +61,13 @@ const TariffHoppingToolContainer = () => {
   useEffect(() => {
     if (isExporting) {
       setImportTariff2(
-        ETARIFFS.filter((tariff) => tariff.category === "IFlux")?.[0].tariff ??
-          "INTELLI-FLUX-IMPORT-23-07-14"
+        ETARIFFS.find((tariff) => tariff.category === "IFlux")?.tariff ?? ""
       );
       setExportTariff2(
-        EETARIFFS.filter((tariff) => tariff.category === "IFlux")?.[0].tariff ??
-          "INTELLI-FLUX-EXPORT-23-07-14"
+        EETARIFFS.find((tariff) => tariff.category === "IFlux")?.tariff ?? ""
       );
     }
-  }, [isExporting]);
+  }, [isExporting, ETARIFFS, EETARIFFS]);
 
   useEffect(() => {
     if (value.tariffHoppingSet2 !== "") {
@@ -93,11 +93,11 @@ const TariffHoppingToolContainer = () => {
 
   const importTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(ETARIFFS, value.currentETariff),
-    [value.currentETariff]
+    [value.currentETariff, ETARIFFS]
   );
   const exportTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(EETARIFFS, value.currentEETariff),
-    [value.currentEETariff]
+    [value.currentEETariff, EETARIFFS]
   );
 
   /* get data from API */

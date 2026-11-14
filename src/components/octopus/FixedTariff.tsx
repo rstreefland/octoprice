@@ -1,9 +1,8 @@
 "use client";
+import { TariffUnavailable } from "./TariffUnavailable";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import { useContext, useState } from "react";
-
-
-import { ETARIFFS } from "@/data/source";
 
 import MapChart from "@/components/octopus/MapChart";
 import { UserContext } from "@/context/user";
@@ -13,8 +12,9 @@ import PricePaneVariable from "./PricePaneVariable";
 import Remark from "./Remark";
 
 const FixedTariff = () => {
+  const { electricity: ETARIFFS } = useTariffCatalogue();
   const [tariff, setTariff] = useState(
-    ETARIFFS.find((tariff) => tariff.category === "Fixed")!.tariff
+    ETARIFFS.find((tariff) => tariff.category === "Fixed")?.tariff ?? ""
   );
   const {
     value: { gsp },
@@ -22,6 +22,8 @@ const FixedTariff = () => {
 
   useContext(WindowResizeContext);
   useContext(WindowVisibilityContext);
+
+  if (!tariff) return <TariffUnavailable />;
 
   return (
     <div className="lg:col-[content] my-4">

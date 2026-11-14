@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import SliderVertical from "@/components/ui/sliderVertical";
 import { UserContext } from "@/context/user";
@@ -33,7 +34,7 @@ import Loading from "@/app/loading";
 import { HiMiniAdjustmentsVertical } from "react-icons/hi2";
 import { TbChartInfographic, TbZoomMoney } from "react-icons/tb";
 
-import { EETARIFFS, ETARIFFS, IPeriod } from "@/data/source";
+import { IPeriod } from "@/data/source";
 import useCalculateSimPrice from "@/hooks/useCalculateSimPrice";
 import useEnergyShiftData from "@/hooks/useEnergyShiftData";
 import { energyShiftReducer } from "@/reducers/energyShift";
@@ -54,6 +55,7 @@ import { RiBattery2ChargeFill } from "react-icons/ri";
 export type ErrorType = Record<string, string>;
 
 const EnergyShiftSimContainer = () => {
+  const { exports: EETARIFFS, electricity: ETARIFFS } = useTariffCatalogue();
   /* states */
   const { value } = useContext(UserContext);
 
@@ -91,7 +93,9 @@ const EnergyShiftSimContainer = () => {
   );
 
   const [importTariff, setImportTariff] = useState<string>("");
-  const [exportTariff, setExportTariff] = useState<string>(EETARIFFS[0].tariff);
+  const [exportTariff, setExportTariff] = useState<string>(
+    EETARIFFS[0]?.tariff ?? ""
+  );
 
   const [hasExport, setHasExport] = useState(false);
 
@@ -105,11 +109,11 @@ const EnergyShiftSimContainer = () => {
 
   const importTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(ETARIFFS, value.currentETariff),
-    [value.currentETariff]
+    [value.currentETariff, ETARIFFS]
   );
   const exportTariffs = useMemo(
     () => getAllTariffsWithCurrentTariff(EETARIFFS, value.currentEETariff),
-    [value.currentEETariff]
+    [value.currentEETariff, EETARIFFS]
   );
 
   /* get data from API */
@@ -403,8 +407,10 @@ const EnergyShiftSimContainer = () => {
               isExporting
                 ? totalExport
                 : value.configSolar.hasSolar
-                ? Math.round((value.configSolar.annualProduction * 1000) / 365)
-                : totalExport
+                  ? Math.round(
+                      (value.configSolar.annualProduction * 1000) / 365
+                    )
+                  : totalExport
             }
             isExport={true}
           />
@@ -664,8 +670,8 @@ const EnergyShiftSimContainer = () => {
                       ? formatNumberToDisplay(difference) > 0
                         ? "text-[#85f9ad]"
                         : formatNumberToDisplay(difference) < 0
-                        ? "text-[#722843]"
-                        : "text-white"
+                          ? "text-[#722843]"
+                          : "text-white"
                       : "text-white"
                   }`}
                 >

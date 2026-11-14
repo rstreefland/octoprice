@@ -30,7 +30,8 @@ interface ITariffComparisionCard {
   type: Exclude<TariffType, "EG">;
   category: TariffCategory;
   compareTo: null | number;
-  setCost: (tariff: string, cost: number) => void;
+  comparisonKey: string;
+  setCost: (comparisonKey: string, cost: number) => void;
   rank: number;
   isExport?: boolean;
   duration?: string;
@@ -46,6 +47,7 @@ const TariffComparisionCard = ({
   category,
   compareTo,
   setCost,
+  comparisonKey,
   rank,
   isExport = false,
   duration = "",
@@ -70,8 +72,8 @@ const TariffComparisionCard = ({
 
   useEffect(() => {
     if (Number.isNaN(cost)) return;
-    if (cost !== null && typeof cost === "number") setCost(tariff, cost);
-  }, [tariff, cost, setCost]);
+    if (cost !== null && typeof cost === "number") setCost(comparisonKey, cost);
+  }, [comparisonKey, cost, setCost]);
 
   const tariffDetailsAvailableFrom = tariffDetails.data?.[0].available_from;
   if (
@@ -127,8 +129,8 @@ const TariffComparisionCard = ({
                 category === "SVT"
                   ? "variable"
                   : category === "E7"
-                  ? "variableE7"
-                  : category.toLowerCase()
+                    ? "variableE7"
+                    : category.toLowerCase()
               }${
                 isExport && ["Agile", "Fixed"].includes(category)
                   ? "Outgoing"
@@ -142,14 +144,14 @@ const TariffComparisionCard = ({
                   category === "SVT"
                     ? "Variable Tariff"
                     : category === "IGo"
-                    ? "Intelligent Go"
-                    : category === "IFlux"
-                    ? "Intelligent Flux"
-                    : tariff.includes("OUTGOING-LITE-FIX")
-                    ? "Fixed Lite"
-                    : category === "E7"
-                    ? "Economy-7"
-                    : category
+                      ? "Intelligent Go"
+                      : category === "IFlux"
+                        ? "Intelligent Flux"
+                        : tariff.includes("OUTGOING-LITE-FIX")
+                          ? "Fixed Lite"
+                          : category === "E7"
+                            ? "Economy-7"
+                            : category
                 }`}
                 icon={
                   <FaMagnifyingGlassChart className="inline-block w-5 h-5 mr-1 text-accentPink-200" />

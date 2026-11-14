@@ -77,7 +77,7 @@ const useConsumptionCalculation = (inputs: IConsumptionCalculation) => {
     dual,
     testRun: value.testRun,
   });
- 
+
   /* Important this should be removed when the new tariffs covers over 1/2 years */
   /*const tariff =
     inputTariff === "SILVER-23-12-06" && results === "yearly"
@@ -160,6 +160,7 @@ const useConsumptionCalculation = (inputs: IConsumptionCalculation) => {
       value.gsp,
       fromDataISODate,
       toDataISODate,
+      dual,
     ],
     queryFn: queryFnStandingChargeData,
     enabled:
@@ -406,7 +407,7 @@ export const calculateDailyPrices = (
           (currentPeriodTariff?.value_inc_vat ?? 0) >
           Number(currentPeriodTariffCap?.[type] ?? 0)
             ? Number(currentPeriodTariffCap?.[type] ?? 0)
-            : currentPeriodTariff?.value_inc_vat ?? 0;
+            : (currentPeriodTariff?.value_inc_vat ?? 0);
 
         totalPrice +=
           currentUnitRate *
@@ -725,7 +726,7 @@ export const calculateMonthlyPrices = (
           (currentPeriodTariff?.value_inc_vat ?? 0) >
           Number(currentPeriodTariffCap?.[type] ?? 0)
             ? Number(currentPeriodTariffCap?.[type] ?? 0)
-            : currentPeriodTariff?.value_inc_vat ?? 0;
+            : (currentPeriodTariff?.value_inc_vat ?? 0);
 
         totalPrice +=
           currentUnitRate *
@@ -1033,7 +1034,7 @@ export const calculatePrice = (
           (currentRateEntry?.value_inc_vat ?? 0) >
           Number(currentRateEntryCap?.[type] ?? 0)
             ? Number(currentRateEntryCap?.[type] ?? 0)
-            : currentRateEntry?.value_inc_vat ?? 0;
+            : (currentRateEntry?.value_inc_vat ?? 0);
         totalPrice +=
           currentUnitRate *
           consumptionDataResults[i].consumption *

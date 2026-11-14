@@ -1,3 +1,5 @@
+import { getPairedTariffSelection } from "@/utils/tariffCatalogue";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 import { BiExport, BiImport } from "react-icons/bi";
 import { HiSearchCircle } from "react-icons/hi";
 import {
@@ -8,7 +10,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { getCategory } from "@/utils/helpers";
-import { EETARIFFS, ITariffToCompare } from "@/data/source";
+import { ITariffToCompare } from "@/data/source";
 import { ReactNode, SetStateAction } from "react";
 
 interface IEnergyShiftSimTariffSelector {
@@ -30,6 +32,7 @@ const EnergyShiftSimTariffSelector = ({
   changeExportTariff,
   children,
 }: IEnergyShiftSimTariffSelector) => {
+  const { electricity, exports: exportTariffs } = useTariffCatalogue();
   return (
     <div className="flex items-center gap-1">
       {!isExport ? (
@@ -60,34 +63,17 @@ const EnergyShiftSimTariffSelector = ({
       </a>
       <Select
         onValueChange={(newSelection: string) => {
-          if (isExporting) {
-            if (["Flux", "IFlux"].includes(getCategory(newSelection))) {
-              changeExportTariff(newSelection.replace("IMPORT", "EXPORT"));
-              changeImportTariff(newSelection.replace("EXPORT", "IMPORT"));
-            } else if (["Go"].includes(getCategory(newSelection))) {
-              changeExportTariff(
-                EETARIFFS.find((tariff) =>
-                  tariff.tariff.includes("OUTGOING-LITE-FIX")
-                )?.tariff ?? "OUTGOING-LITE-FIX-12M-23-09-12"
-              );
-              changeImportTariff(newSelection.replace("EXPORT", "IMPORT"));
-            } else if (["IGo"].includes(getCategory(newSelection))) {
-              changeExportTariff(
-                EETARIFFS.find((tariff) =>
-                  tariff.tariff.includes("OUTGOING-FIX")
-                )?.tariff ?? "OUTGOING-FIX-12M-19-05-13"
-              );
-              changeImportTariff(newSelection.replace("EXPORT", "IMPORT"));
-            } else {
-              isExport
-                ? changeExportTariff(newSelection)
-                : changeImportTariff(newSelection);
-            }
-          } else {
-            isExport
-              ? changeExportTariff(newSelection)
-              : changeImportTariff(newSelection);
-          }
+          const selection = getPairedTariffSelection({
+            selectedCode: newSelection,
+            isExport,
+            isExporting,
+            electricity,
+            exports: exportTariffs,
+          });
+          if (selection.importTariff !== undefined)
+            changeImportTariff(selection.importTariff);
+          if (selection.exportTariff !== undefined)
+            changeExportTariff(selection.exportTariff);
         }}
         value={tariff}
       >

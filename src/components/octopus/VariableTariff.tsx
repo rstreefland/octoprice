@@ -1,6 +1,7 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { ReactNode, useContext } from "react";
 
 import {
   Accordion,
@@ -8,8 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-import { CURRENT_VARIABLE_CODE, TRACKER } from "@/data/source";
 
 import { UserContext } from "@/context/user";
 import BrushChart from "./BrushChart";
@@ -20,22 +19,15 @@ import MapChart from "@/components/octopus/MapChart";
 import { WindowResizeContext } from "@/context/windowResize";
 import { WindowVisibilityContext } from "@/context/windowVisibility";
 import PricePaneVariable from "./PricePaneVariable";
-import useGetTariffCode from "@/hooks/useGetTariffCode";
 
 const VariableTariff = () => {
-  const [tariff, setTariff] = useState(CURRENT_VARIABLE_CODE);
+  const { variableCode: CURRENT_VARIABLE_CODE } = useTariffCatalogue();
+  const tariff = CURRENT_VARIABLE_CODE;
   const {
     value: { gsp },
   } = useContext(UserContext);
-  const { data, isLoading, isSuccess, isError } = useGetTariffCode({});
   useContext(WindowResizeContext);
   useContext(WindowVisibilityContext);
-
-  useEffect(() => {
-    if (isSuccess && data?.code) {
-      setTariff(data.code);
-    }
-  }, [data?.code, isSuccess]);
 
   return (
     <div className="lg:col-[content] my-4">

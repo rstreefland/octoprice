@@ -74,3 +74,23 @@ Demo consumption is generated locally from deterministic synthetic values. It do
 not represent a real household. Real account data is fetched directly from the
 Octopus API in the browser. No server routes or private deployment API keys are
 required.
+
+## Tariff discovery
+
+Tariff pages and comparison tools fetch the public Octopus product catalogue in
+the browser, including paginated historical products. React Query shares the
+catalogue across the app and caches it for an hour. No API key or scheduled build
+is needed to discover a new product version.
+
+The supported domestic families are Flexible (including Economy 7), Tracker,
+Agile, Cosy, standard 12-month Fixed, Flux, Intelligent Flux, Go, Intelligent Go,
+and the existing export families. Business, prepay, other suppliers and new smart
+variants with unsupported pricing structures are excluded. Existing Bulb variants
+remain recognised for compatibility. The latest open product is preferred,
+falling back to the latest archived version when a family has been withdrawn.
+Saved customer selections and historical Agile/Tracker versions remain available.
+
+Ofgem cap data and the existing Agile/Tracker maximum-rate guarantees are unchanged.
+`pnpm test` includes catalogue regression fixtures captured from the previous
+hardcoded lists and public Octopus responses. The old Intelligent Flux export code
+returns 404, so an unavailable family is handled without inventing a product code.

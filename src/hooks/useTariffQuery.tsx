@@ -94,7 +94,7 @@ function useTariffQuery<T>({
   if (!gsp) typeArr.length = 1;
   const query = useQuery<T[]>({
     enabled: !!tariff,
-    queryKey: ["getTariff", tariff, type, gsp, duration],
+    queryKey: ["getTariff", tariff, type, gsp, duration, dual],
     queryFn:
       dual && gsp
         ? fetchApi([

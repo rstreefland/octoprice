@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import {
   ChangeEvent,
@@ -16,8 +17,6 @@ import fileStructure from "../../../public/images/files.png";
 import Remark from "./Remark";
 import * as d3 from "d3";
 import {
-  ETARIFFS,
-  GTARIFFS,
   IConsumptionData,
   ITariffToCompare,
   TariffCategory,
@@ -62,6 +61,7 @@ interface IFiles {
 }
 
 const SwitchTariffs = () => {
+  const { electricity: ETARIFFS, gas: GTARIFFS } = useTariffCatalogue();
   const { value, setValue } = useContext(UserContext);
   const [file, setFile] = useState<IFiles>({ E: null, G: null });
   const [uploadedEData, setUploadedEData] = useState<ISwitchConsumptionData>({
@@ -200,7 +200,6 @@ const SwitchTariffs = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div className="w-full">
-          
           {!showResults ? (
             <div className="p-8 border border-accentPink-950 rounded-b-3xl relative">
               <h3 className="text-4xl mb-2 bg-gradient-to-r from-accentPink-500 via-amber-300 to-accentBlue-500 inline-block text-transparent bg-clip-text">
