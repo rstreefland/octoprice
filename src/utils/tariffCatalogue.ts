@@ -1,15 +1,4 @@
-export interface OctopusProduct {
-  code: string;
-  full_name: string;
-  display_name: string;
-  direction: "IMPORT" | "EXPORT";
-  brand: string;
-  is_business: boolean;
-  is_prepay: boolean;
-  is_variable: boolean;
-  available_from: string;
-  available_to: string | null;
-}
+import type { OctopusProduct } from "../api/octopusProducts";
 
 export type SupportedTariffFamily =
   | "SVT"
@@ -24,156 +13,42 @@ export type SupportedTariffFamily =
   | "Outgoing"
   | "OutgoingLite";
 
-export function getSupportedTariffFamily(
-  product: OctopusProduct
-): SupportedTariffFamily | undefined {
+const familyPatterns: Record<
+  OctopusProduct["direction"],
+  [SupportedTariffFamily, RegExp][]
+> = {
+  IMPORT: [
+    ["SVT", /^VAR-(?:BB-)?\d/],
+    ["Tracker", /^SILVER-(?:(?:FLEX|VAR)-(?:BB-)?)?\d/],
+    ["Agile", /^AGILE-(?:FLEX-)?\d/],
+    ["Cosy", /^COSY-\d/],
+    ["Fixed", /^(?:LOYAL-|OE-)?FIX-12M-\d/],
+    ["Flux", /^FLUX-IMPORT-(?:BB-)?\d/],
+    ["IFlux", /^INTELLI-FLUX-IMPORT-(?:BB-)?\d/],
+    ["Go", /^GO-VAR-(?:BB-)?\d/],
+    ["IGo", /^INTELLI-VAR-(?:BB-)?\d/],
+  ],
+  EXPORT: [
+    ["Agile", /^AGILE-OUTGOING-\d/],
+    ["Flux", /^FLUX-EXPORT-(?:BB-)?\d/],
+    ["IFlux", /^INTELLI-FLUX-EXPORT-(?:BB-)?\d/],
+    ["Outgoing", /^OUTGOING-(?:FIX-12M-|VAR-)(?:BB-)?\d/],
+    ["OutgoingLite", /^OUTGOING-LITE-FIX-12M-(?:BB-)?\d/],
+  ],
+};
+
+export function getSupportedTariffFamily(product: OctopusProduct) {
   if (product.is_business || product.is_prepay) return;
-  if (!["OCTOPUS_ENERGY", "BULB"].includes(product.brand)) return;
-
-  if (product.direction === "EXPORT") {
-    switch (product.display_name) {
-      case "Agile Outgoing Octopus":
-        return "Agile";
-      case "Octopus Flux Export":
-        return "Flux";
-      case "Intelligent Octopus Flux Export":
-        return "IFlux";
-      case "Outgoing Octopus 12M Fixed":
-      case "Outgoing Octopus":
-        return "Outgoing";
-      case "Outgoing Octopus Fixed Lite":
-        return "OutgoingLite";
-    }
-    return;
-  }
-
-  switch (product.display_name) {
-    case "Flexible Octopus":
-      return "SVT";
-    case "Octopus Tracker":
-      return "Tracker";
-    case "Agile Octopus":
-      return "Agile";
-    case "Cosy Octopus":
-      return "Cosy";
-    case "Octopus Flux Import":
-      return "Flux";
-    case "Intelligent Octopus Flux Import":
-      return "IFlux";
-    case "Octopus Go":
-      return "Go";
-    case "Intelligent Octopus Go":
-      if (product.code.startsWith("INTELLI-VAR-")) return "IGo";
-      return;
-    case "Loyal Octopus 12M Fixed":
-    case "Octopus 12M Fixed":
-      return "Fixed";
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isOctopusProduct(value: unknown): value is OctopusProduct {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.code === "string" &&
-    value.code.length > 0 &&
-    typeof value.full_name === "string" &&
-    typeof value.display_name === "string" &&
-    (value.direction === "IMPORT" || value.direction === "EXPORT") &&
-    typeof value.brand === "string" &&
-    typeof value.is_business === "boolean" &&
-    typeof value.is_prepay === "boolean" &&
-    typeof value.is_variable === "boolean" &&
-    typeof value.available_from === "string" &&
-    Number.isFinite(Date.parse(value.available_from)) &&
-    (value.available_to === null ||
-      (typeof value.available_to === "string" &&
-        Number.isFinite(Date.parse(value.available_to))))
-  );
-}
-
-export function parseProductPage(value: unknown): {
-  results: OctopusProduct[];
-  next: string | null;
-} {
-  if (
-    !isRecord(value) ||
-    !Array.isArray(value.results) ||
-    !value.results.every(isOctopusProduct) ||
-    !(value.next === null || typeof value.next === "string")
-  ) {
-    throw new Error(
-      "Octopus returned an invalid product catalogue. Please try again."
-    );
-  }
-  return {
-    results: value.results,
-    next: typeof value.next === "string" ? value.next : null,
-  };
-}
-
-export async function fetchOctopusProducts({
-  historical = false,
-  fetchPage = fetch,
-  signal,
-}: {
-  historical?: boolean;
-  fetchPage?: typeof fetch;
-  signal?: AbortSignal;
-} = {}): Promise<OctopusProduct[]> {
-  const parameters = new URLSearchParams({
-    brand: "OCTOPUS_ENERGY",
-    is_business: "false",
-    is_prepay: "false",
-    is_historical: String(historical),
-  });
-  let next: string | null =
-    `https://api.octopus.energy/v1/products/?${parameters}`;
-  const visited = new Set<string>();
-  const products = new Map<string, OctopusProduct>();
-
-  while (next) {
-    const url = new URL(next);
-    const allowedHosts = ["api.octopus.energy", "api.oegb-kraken.energy"];
-    if (
-      url.protocol !== "https:" ||
-      !allowedHosts.includes(url.hostname) ||
-      url.pathname !== "/v1/products/" ||
-      visited.has(url.href)
-    ) {
-      throw new Error("Octopus returned an invalid catalogue page link.");
-    }
-    visited.add(url.href);
-    const response = await fetchPage(url.href, { signal });
-    if (!response.ok)
-      throw new Error("Unable to load Octopus tariffs. Please try again.");
-    const page = parseProductPage(await response.json());
-    for (const product of page.results) {
-      if (getSupportedTariffFamily(product))
-        products.set(product.code, product);
-    }
-    next = page.next;
-  }
-
-  return [...products.values()];
+  if (product.brand !== "OCTOPUS_ENERGY" && product.brand !== "BULB") return;
+  return familyPatterns[product.direction].find(([, pattern]) =>
+    pattern.test(product.code)
+  )?.[0];
 }
 
 export interface CatalogueTariff {
   tariff: string;
   type: "E" | "G";
-  category:
-    | "SVT"
-    | "Tracker"
-    | "Agile"
-    | "Cosy"
-    | "Fixed"
-    | "Flux"
-    | "IFlux"
-    | "Go"
-    | "IGo";
+  category: Exclude<SupportedTariffFamily, "Outgoing" | "OutgoingLite">;
   cost: number | null;
 }
 
@@ -204,14 +79,14 @@ export function buildTariffCatalogue({
     Date.parse(product.available_from) <= now.valueOf() &&
     (product.available_to === null ||
       Date.parse(product.available_to) > now.valueOf());
-  const supportedProducts = products.filter(
-    (product) =>
-      getSupportedTariffFamily(product) !== undefined &&
-      Date.parse(product.available_from) <= now.valueOf()
-  );
-  const sortedProducts = [...supportedProducts].sort((a, b) => {
-    const availabilityDifference =
-      Number(isAvailable(b)) - Number(isAvailable(a));
+  const candidates = products.flatMap((product) => {
+    const family = getSupportedTariffFamily(product);
+    if (!family || Date.parse(product.available_from) > now.valueOf())
+      return [];
+    return [{ ...product, family, available: isAvailable(product) }];
+  });
+  const sortedProducts = candidates.sort((a, b) => {
+    const availabilityDifference = Number(b.available) - Number(a.available);
     if (availabilityDifference) return availabilityDifference;
     const brandDifference =
       Number(b.brand === "OCTOPUS_ENERGY") -
@@ -234,8 +109,7 @@ export function buildTariffCatalogue({
     families.flatMap((family) => {
       const product = sortedProducts.find(
         (product) =>
-          product.direction === direction &&
-          getSupportedTariffFamily(product) === family
+          product.direction === direction && product.family === family
       );
       if (!product) return [];
       return [
@@ -262,13 +136,13 @@ export function buildTariffCatalogue({
         (product) =>
           product.direction === "IMPORT" &&
           product.brand === "OCTOPUS_ENERGY" &&
-          getSupportedTariffFamily(product) === family &&
+          product.family === family &&
           Date.parse(product.available_from) >= Date.parse(earliestDate)
       )
       .map((product) => ({
         code: product.code,
         name: product.full_name,
-        currentPlan: isAvailable(product),
+        currentPlan: product.available,
         cap: { E: 100, G: family === "Tracker" ? 30 : 0 },
       }));
 

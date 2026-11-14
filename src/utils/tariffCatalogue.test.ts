@@ -1,14 +1,14 @@
 import { deepStrictEqual, rejects, throws } from "node:assert";
 import { test } from "node:test";
+import { fetchOctopusProducts, parseProductPage } from "../api/octopusProducts";
+import { loadTariffCatalogue } from "../api/tariffCatalogue";
 import legacyTariffs from "./fixtures/legacyTariffs.json";
 import legacyProducts from "./fixtures/octopusLegacyProducts.json";
 import {
   buildTariffCatalogue,
   getPairedTariffSelection,
   getTariffComparisonKey,
-  fetchOctopusProducts,
   getSupportedTariffFamily,
-  parseProductPage,
 } from "./tariffCatalogue";
 
 const products = parseProductPage({
@@ -65,14 +65,14 @@ test("business, prepay, other suppliers and unsupported smart variants are exclu
     { ...agile, is_business: true },
     { ...agile, is_prepay: true },
     { ...agile, brand: "AFFECT_ENERGY" },
-    { ...agile, display_name: "Agile Business" },
-    { ...agile, display_name: "Intelligent Octopus Go Max" },
+    { ...agile, code: "AGILE-BUSINESS-26-01-01" },
+    { ...agile, code: "IOG-SMB-VAR-26-10-29" },
     {
       ...agile,
       code: "IOG-SMB-VAR-26-11-04",
       display_name: "Intelligent Octopus Go",
     },
-    { ...agile, display_name: "Octopus Go 12M Fixed" },
+    { ...agile, code: "GO-FIX-12M-26-10-30" },
     {
       ...agile,
       direction: "EXPORT",
@@ -89,7 +89,7 @@ test("business, prepay, other suppliers and unsupported smart variants are exclu
   );
 });
 
-test("catalogue fetching follows pagination, excludes unsupported products and deduplicates", async () => {
+test("catalogue fetching follows pagination and deduplicates products", async () => {
   const next = "https://api.oegb-kraken.energy/v1/products/?page=2";
   const urls: string[] = [];
   const signal = new AbortController().signal;
@@ -106,7 +106,7 @@ test("catalogue fetching follows pagination, excludes unsupported products and d
   };
   deepStrictEqual(
     await fetchOctopusProducts({ fetchPage, signal, historical: true }),
-    [agile]
+    [agile, { ...agile, code: "BUSINESS", is_business: true }]
   );
   deepStrictEqual(urls, [
     "https://api.octopus.energy/v1/products/?brand=OCTOPUS_ENERGY&is_business=false&is_prepay=false&is_historical=true",
@@ -187,13 +187,13 @@ test("all previously selectable Agile and Tracker codes and maximum rates surviv
 test("active products take precedence, followed by the latest archived version, without future products", () => {
   const archived = {
     ...agile,
-    code: "AGILE-ARCHIVED",
+    code: "AGILE-25-01-01",
     available_from: "2025-01-01",
     available_to: "2025-04-01",
   };
   const future = {
     ...agile,
-    code: "AGILE-FUTURE",
+    code: "AGILE-27-01-01",
     available_from: "2027-01-01",
   };
   const catalogue = buildTariffCatalogue({
@@ -206,7 +206,7 @@ test("active products take precedence, followed by the latest archived version, 
   const withdrawn = buildTariffCatalogue({
     products: [
       archived,
-      { ...archived, code: "AGILE-OLDER", available_from: "2024-01-01" },
+      { ...archived, code: "AGILE-24-01-01", available_from: "2024-01-01" },
     ],
     now,
   });
@@ -265,5 +265,80 @@ test("single-rate Flexible and Economy 7 comparisons have distinct identities", 
       getTariffComparisonKey({ tariff: "VAR-22-11-01", category: "E7" }),
     ],
     ["VAR-22-11-01:SVT", "VAR-22-11-01:E7"]
+  );
+});
+
+test("Zod validates required API fields and strips unused enrichment", () => {
+  deepStrictEqual(
+    parseProductPage({
+      count: 1,
+      results: [
+        {
+          ...agile,
+          display_name: "Renamed Agile",
+          is_variable: true,
+          unknown_field: "unused",
+        },
+      ],
+      next: null,
+    }),
+    { results: [agile], next: null }
+  );
+  for (const invalid of [
+    { ...agile, code: "" },
+    { ...agile, full_name: undefined },
+    { ...agile, direction: "UNKNOWN" },
+    { ...agile, is_prepay: "false" },
+    { ...agile, available_to: undefined },
+  ]) {
+    throws(
+      () => parseProductPage({ results: [invalid], next: null }),
+      /invalid product catalogue/
+    );
+  }
+  const renamed = parseProductPage({
+    results: [{ ...agile, full_name: "A renamed tariff" }],
+    next: null,
+  }).results[0];
+  deepStrictEqual(getSupportedTariffFamily(renamed), "Agile");
+});
+
+test("the loader merges current and archived products before discovering supported tariffs", async () => {
+  const signal = new AbortController().signal;
+  const currentAgile = { ...agile, full_name: "Current API label" };
+  const fetchPage: typeof fetch = async (input, options) => {
+    deepStrictEqual(options?.signal, signal);
+    return new URL(String(input)).searchParams.get("is_historical") === "true"
+      ? productPage([
+          ...products,
+          { ...agile, code: "AGILE-BUSINESS", is_business: true },
+        ])
+      : productPage([currentAgile]);
+  };
+  const catalogue = await loadTariffCatalogue({ signal, fetchPage });
+  deepStrictEqual(catalogue.agile[0].name, "Current API label");
+  deepStrictEqual(
+    catalogue.agile.map((plan) => plan.code),
+    legacyTariffs.AGILE.map((plan) => plan.code)
+  );
+  deepStrictEqual(
+    catalogue.electricity.map((tariff) => tariff.category),
+    ["SVT", "Tracker", "Agile", "Cosy", "Fixed", "Flux", "IFlux", "Go", "IGo"]
+  );
+});
+
+test("the loader rejects incomplete catalogues and preserves request cancellation", async () => {
+  await rejects(
+    loadTariffCatalogue({ fetchPage: async () => productPage([agile]) }),
+    /incomplete tariff catalogue/
+  );
+  const cancellation = new DOMException("Request cancelled", "AbortError");
+  await rejects(
+    loadTariffCatalogue({
+      fetchPage: async () => {
+        throw cancellation;
+      },
+    }),
+    (error) => error === cancellation
   );
 });

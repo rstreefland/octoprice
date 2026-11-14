@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc --outDir .test-output --module commonjs --moduleResolution node --target es2015 --skipLibCheck --esModuleInterop --resolveJsonModule src/utils/demoConsumption.test.ts src/utils/tariffCatalogue.test.ts && node --test .test-output/demoConsumption.test.js .test-output/tariffCatalogue.test.js"
+    "test": "tsc --outDir .test-output --module commonjs --moduleResolution node --target es2015 --skipLibCheck --strict --esModuleInterop --resolveJsonModule src/utils/demoConsumption.test.ts src/utils/tariffCatalogue.test.ts && node --test .test-output/utils/demoConsumption.test.js .test-output/utils/tariffCatalogue.test.js"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -55,7 +55,8 @@
     "tailwindcss-animate": "^1.0.7",
     "topojson-client": "^3.1.0",
     "use-supercluster": "^1.2.0",
-    "world-atlas": "^2.0.2"
+    "world-atlas": "^2.0.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.7",
