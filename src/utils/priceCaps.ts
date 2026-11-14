@@ -57,9 +57,16 @@ export const updateMetadataSchema = z.object({
   attribution: attributionSchema,
   licence: z.literal("CC-BY-4.0"),
 });
+const backfillMetadataSchema = updateMetadataSchema
+  .omit({ attribution: true, licence: true })
+  .extend({
+    licence: z.literal("OGL-3.0"),
+    methodology: z.string().min(1),
+  });
 export const priceCapSourcesSchema = z.object({
   legacySource: z.literal(LEGACY_PRICE_CAP_SOURCE),
   updates: z.array(updateMetadataSchema),
+  backfills: z.array(backfillMetadataSchema),
 });
 export type PriceCapSources = z.infer<typeof priceCapSourcesSchema>;
 export type PriceCapUpdate = {
@@ -135,6 +142,6 @@ export function mergePriceCapUpdate({
       ),
       "",
     ].join("\n"),
-    sources: { legacySource: sources.legacySource, updates },
+    sources: { ...sources, updates },
   };
 }

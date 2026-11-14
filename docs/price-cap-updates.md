@@ -32,13 +32,33 @@ even when data is unchanged, so it can recover a failed deployment dispatch.
 The original Octoprice TSV is retained as historical input, including blank
 standing charges where they were unknown. UtilityPrices supplies the currently
 published period, not a full historical API. Missing older periods are not
-inferred or backfilled; the initial archive has no July to September 2026
-snapshot. Future periods are accumulated as the updater observes them.
+inferred by the updater. Future periods are accumulated as the updater observes
+them.
+
+The missing July to September 2026 period was backfilled once from Ofgem's
+[final levelised cap rates model (Annex 9)](https://www.ofgem.gov.uk/sites/default/files/2026-05/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.10-July-September-2026.xlsx).
+Sheet `1a Levelised DTC`, rows 14 to 27, contains the Direct Debit (Other Payment
+Method) regional charges. Columns C/D are the nil/benchmark single-rate
+electricity charges; G/H are the nil/benchmark gas charges. These are annual
+pounds excluding VAT. For this period, benchmark consumption is 2,500 kWh of
+electricity and 9,500 kWh of gas, and both fuels carry 5% VAT.
+
+- Unit rate in pence/kWh: `(benchmark - nil) * 1.05 * 100 / benchmark kWh`.
+- Standing charge in pence/day: `nil * 1.05 * 100 / 365`.
+
+The one-off conversion used decimal arithmetic and rounded half up to two
+decimal places. GB averages were copied from
+[Ofgem's July announcement](https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-july-and-30-september-2026),
+not calculated from rounded regional rates. This backfill is licensed under
+the Open Government Licence v3.0 and recorded separately from UtilityPrices
+updates. It does not add another scheduled data source.
 
 `price-cap-sources.json` records each imported period, the provider's retrieval
 date, VAT basis, Ofgem sources and required attribution. The live app fetches the
 repo's TSV, so it does not depend on UtilityPrices being online for each visit.
 The visible footer credits UtilityPrices and the original Ofgem source.
+The updater preserves the one-off backfill and its provenance when new periods
+are imported.
 
 ## Sources and licence
 

@@ -89,6 +89,7 @@ const historical = PRICE_CAP_COLUMNS + "\n_A\t2026-04-01\t24.7\t5.65\t\t\n";
 const emptySources = priceCapSourcesSchema.parse({
   legacySource: LEGACY_PRICE_CAP_SOURCE,
   updates: [],
+  backfills: [],
 });
 
 test("UtilityPrices regions map to the correct GSPs and retain source units without VAT conversion", () => {
@@ -310,7 +311,7 @@ test("both API requests receive cancellation, and failed requests do not return 
   );
 });
 
-test("committed snapshots have valid rows, provenance and complete UtilityPrices periods", () => {
+test("committed snapshots have valid rows, provenance and complete imported periods", () => {
   const rows = parsePriceCapTsv(
     readFileSync("public/data/price-caps.tsv", "utf8"),
   );
@@ -318,7 +319,7 @@ test("committed snapshots have valid rows, provenance and complete UtilityPrices
     JSON.parse(readFileSync("public/data/price-cap-sources.json", "utf8")),
   );
   ok(rows.length > 0);
-  for (const update of sources.updates) {
+  for (const update of [...sources.updates, ...sources.backfills]) {
     deepStrictEqual(
       rows
         .filter((row) => row.Date === update.period.effectiveFrom)
@@ -343,4 +344,53 @@ test("committed snapshots have valid rows, provenance and complete UtilityPrices
       ],
     );
   }
+});
+
+test("July 2026 backfill covers all regions and survives subsequent API updates with its provenance", () => {
+  const text = readFileSync("public/data/price-caps.tsv", "utf8");
+  const sources = priceCapSourcesSchema.parse(
+    JSON.parse(readFileSync("public/data/price-cap-sources.json", "utf8")),
+  );
+  const julyRows = parsePriceCapTsv(text).filter(
+    (row) => row.Date === "2026-07-01",
+  );
+  deepStrictEqual(
+    julyRows.map(({ Region, E, G, ES, GS }) => [Region, E, G, ES, GS]),
+    [
+      ["GB", "26.11", "7.33", "57.19", "29.04"],
+      ["_A", "26.38", "7.26", "53.94", "28.70"],
+      ["_B", "25.10", "7.19", "53.60", "28.78"],
+      ["_C", "26.35", "7.50", "44.78", "29.52"],
+      ["_D", "27.66", "7.28", "70.76", "29.42"],
+      ["_E", "25.33", "7.27", "59.71", "29.06"],
+      ["_F", "25.22", "7.28", "64.29", "29.15"],
+      ["_G", "26.13", "7.24", "47.61", "29.17"],
+      ["_H", "26.42", "7.53", "49.70", "28.53"],
+      ["_J", "26.67", "7.39", "54.45", "28.63"],
+      ["_K", "26.33", "7.42", "57.84", "29.30"],
+      ["_L", "26.39", "7.48", "57.89", "28.68"],
+      ["_M", "25.31", "7.27", "64.38", "29.12"],
+      ["_N", "25.85", "7.23", "64.17", "29.24"],
+      ["_P", "26.42", "7.23", "57.55", "29.22"],
+    ],
+  );
+  deepStrictEqual(
+    sources.backfills.map(({ period, licence }) => ({ period, licence })),
+    [
+      {
+        period: { effectiveFrom: "2026-07-01", effectiveTo: "2026-09-30" },
+        licence: "OGL-3.0",
+      },
+    ],
+  );
+  const merged = mergePriceCapUpdate({
+    text,
+    sources,
+    update: parseUtilityPricesUpdate(fixture()),
+  });
+  deepStrictEqual(merged.sources.backfills, sources.backfills);
+  deepStrictEqual(
+    parsePriceCapTsv(merged.text).filter((row) => row.Date === "2026-07-01"),
+    julyRows,
+  );
 });

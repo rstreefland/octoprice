@@ -46,5 +46,29 @@
       },
       "licence": "CC-BY-4.0"
     }
+  ],
+  "backfills": [
+    {
+      "period": {
+        "effectiveFrom": "2026-07-01",
+        "effectiveTo": "2026-09-30"
+      },
+      "retrievedAt": "2026-11-14",
+      "vatBasis": "Electricity and gas include 5% VAT.",
+      "sources": [
+        {
+          "title": "Ofgem: final levelised cap rates model, July to September 2026 (Annex 9)",
+          "url": "https://www.ofgem.gov.uk/sites/default/files/2026-05/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.10-July-September-2026.xlsx",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: July to September 2026 GB average Direct Debit rates",
+          "url": "https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-july-and-30-september-2026",
+          "publisher": "Ofgem"
+        }
+      ],
+      "licence": "OGL-3.0",
+      "methodology": "Regional rates derived from sheet '1a Levelised DTC', Other Payment Method (Direct Debit), rows 14 to 27. Columns C/D are single-rate electricity nil/benchmark annual charges; G/H are gas nil/benchmark annual charges, in pounds excluding VAT. Unit rate = (benchmark - nil) * 1.05 * 100 / benchmark kWh (electricity 2500, gas 9500). Standing charge = nil * 1.05 * 100 / 365. Decimal arithmetic, rounded half up to two decimal places in pence. GB rates copied from Ofgem's July announcement, not averaged from rounded regional rates."
+    }
   ]
 }
