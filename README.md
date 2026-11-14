@@ -60,6 +60,8 @@ Pushes to `main` and manual runs of `.github/workflows/pages.yml` build a Next.j
 static export and deploy the `out` directory using the official GitHub Pages
 actions, matching `saving-session-explorer`.
 
+Price cap snapshots are maintained by the [weekly updater](docs/price-cap-updates.md).
+
 Use the pnpm version declared in `package.json`:
 
 ```sh

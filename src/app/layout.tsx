@@ -7,6 +7,7 @@ import Providers from "./providers";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Header from "@/components/Header";
+import { PriceCapAttribution } from "@/components/octopus/PriceCapAttribution";
 import Toast from "@/components/Toast";
 
 import { Advent_Pro, Roboto } from "next/font/google";
@@ -154,6 +155,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                       edward.chung.dev@gmail.com
                     </a>
                   </span>
+                  <PriceCapAttribution />
                 </footer>
               </div>
             </Toast>

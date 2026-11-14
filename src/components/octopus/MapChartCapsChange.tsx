@@ -36,7 +36,7 @@ import {
 
 import { EnergyIcon } from "./EnergyIcon";
 import ErrorMessage from "./ErrorMessage";
-import usePriceCapQuery from "@/hooks/usePriceCapQuery";
+import { usePriceCapQuery } from "@/hooks/usePriceCapQuery";
 
 interface IMapChartCapsChart {
   type: keyof typeof ENERGY_TYPE;
@@ -67,6 +67,11 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
   } = usePriceCapQuery({
     gsp: `_${gsp}` as gsp,
   });
+  const [latestDate, previousDate] = [
+    ...new Set(priceCapsData?.map((cap) => cap.Date)),
+  ]
+    .sort()
+    .reverse();
 
   let path = geoPath();
   if (mapData?.districts) {
@@ -80,21 +85,15 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
     if (!svgRef.current || !mapData || !mapData?.districts || !priceCapsData)
       return;
 
-    const orderedDates: string[] = [];
-    priceCapsData.forEach(
-      (caps) =>
-        !orderedDates.includes(caps.Date) && orderedDates.push(caps.Date)
-    );
-
     const prevCaps = priceCapsData
-      .filter((cap) => cap.Date === orderedDates[1] && cap.Region !== "GB")
+      .filter((cap) => cap.Date === previousDate && cap.Region !== "GB")
       .sort();
     const newCaps = priceCapsData
-      .filter((cap) => cap.Date === orderedDates[0] && cap.Region !== "GB")
+      .filter((cap) => cap.Date === latestDate && cap.Region !== "GB")
       .sort();
 
     const differenceCaps = newCaps.map(
-      (cap, i) => Number(cap[rate]) - Number(prevCaps[i][rate])
+      (cap, i) => Number(cap[rate]) - Number(prevCaps[i][rate]),
     );
 
     let scale = 1;
@@ -105,11 +104,11 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
     const valueExtent = extent(differenceCaps, (d) => d) as [number, number];
 
     const colorScale = scaleSequential(
-      interpolate("#FFFFFF", "#ce2cb9")
+      interpolate("#FFFFFF", "#ce2cb9"),
     ).domain(valueExtent);
 
     const valueExtentasPoint = valueExtent.map((value) =>
-      evenRound(value, 2, true)
+      evenRound(value, 2, true),
     );
 
     const legendScale = scalePoint()
@@ -164,7 +163,7 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
       .join("path")
       .attr("d", (d) => path(d.geometry) ?? null)
       .attr("fill", (d) =>
-        d.properties?.Name === `_${gsp}` ? "#13357e" : "#03155e"
+        d.properties?.Name === `_${gsp}` ? "#13357e" : "#03155e",
       )
       .attr("data-zone", (d) => d.properties?.Name)
       .attr("data-zoneName", (d) => d.properties?.LongName)
@@ -197,7 +196,7 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
           .select(".tooltipTranslate")
           .attr(
             "transform",
-            `translate(${tooltipShiftLeft},${tooltipShiftUp})`
+            `translate(${tooltipShiftLeft},${tooltipShiftUp})`,
           );
         tooltip
           .select(".zone")
@@ -216,16 +215,16 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
               Number(
                 calculateChangePercentage(
                   parseFloat(getPrice(gsp, newCaps)),
-                  parseFloat(getPrice(gsp, prevCaps))
-                )
-              )
-            )}%`
+                  parseFloat(getPrice(gsp, prevCaps)),
+                ),
+              ),
+            )}%`,
           );
       })
       .on("pointerleave", function (d) {
         select(this).attr(
           "fill",
-          select(this).attr("data-zone") === `_${gsp}` ? "#13357e" : "#03155e"
+          select(this).attr("data-zone") === `_${gsp}` ? "#13357e" : "#03155e",
         );
       })
       .on("pointerleave.zoom", null);
@@ -247,8 +246,8 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
               evenRound(
                 parseFloat(getPrice(gsp, newCaps)) -
                   parseFloat(getPrice(gsp, prevCaps)),
-                2
-              )
+                2,
+              ),
             ) + "p"
           );
         })
@@ -284,7 +283,7 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
         tooltip.attr("opacity", "0");
         selectAll(".tooltip").attr(
           "transform",
-          `translate(${10 / scale} ${10 / scale}) scale(${1 / scale})`
+          `translate(${10 / scale} ${10 / scale}) scale(${1 / scale})`,
         );
 
         // synchronize zoom level of all maps
@@ -307,9 +306,20 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
       .call(
         zoomBehavior.transform,
         zoomIdentity,
-        zoomTransform(svg.node()!).invert([width / 2, height / 2])
+        zoomTransform(svg.node()!).invert([width / 2, height / 2]),
       );
-  }, [mapData, priceCapsData, type, path, height, gsp, rate, width]);
+  }, [
+    mapData,
+    priceCapsData,
+    type,
+    path,
+    height,
+    gsp,
+    rate,
+    width,
+    latestDate,
+    previousDate,
+  ]);
 
   return (
     <div className="mapDiv relative h-[450px] flex-1 flex items-center justify-center flex-col rounded-xl bg-black/30 border border-accentPink-950 shadow-inner overflow-hidden">
@@ -318,6 +328,11 @@ const MapChartCapsChart = ({ type, rate, gsp }: IMapChartCapsChart) => {
       {isSuccess && mapData && (
         <>
           <EnergyIcon type={type} />
+          {latestDate && previousDate && (
+            <p className="absolute top-2 left-2 right-16 text-xs text-white/60">
+              Cap change: {previousDate} to {latestDate}
+            </p>
+          )}
           <svg
             width={width}
             height={height}

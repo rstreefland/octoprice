@@ -11,7 +11,7 @@ import useYearlyTariffQuery from "@/hooks/useYearlyTariffQuery";
 import { getDate } from "@/utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
-import usePriceCapQuery from "./usePriceCapQuery";
+import { usePriceCapQuery } from "./usePriceCapQuery";
 import { ISwitchConsumptionData } from "@/components/octopus/SwitchTariffs";
 import {
   calculateMonthlyPrices,

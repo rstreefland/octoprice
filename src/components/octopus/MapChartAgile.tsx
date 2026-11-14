@@ -32,7 +32,7 @@ import {
 import useAgileTariffQuery from "@/hooks/useAgileTariffQuery";
 import { EnergyIcon } from "./EnergyIcon";
 import ErrorMessage from "./ErrorMessage";
-import usePriceCapQuery from "@/hooks/usePriceCapQuery";
+import { usePriceCapQuery } from "@/hooks/usePriceCapQuery";
 import { HiVizContext } from "@/context/hiViz";
 
 interface IMapChartAgile {

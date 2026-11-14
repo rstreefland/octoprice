@@ -12,7 +12,7 @@ import useYearlyTariffQuery from "@/hooks/useYearlyTariffQuery";
 import { evenRound, getDate } from "@/utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
-import usePriceCapQuery from "./usePriceCapQuery";
+import { usePriceCapQuery } from "./usePriceCapQuery";
 import useConsumptionData from "./useConsumptionData";
 import useTariffQueryYearlyAverage from "./useTariffQueryYearlyAverage";
 import useTariffQueryAverage from "./useTariffQueryAverage";

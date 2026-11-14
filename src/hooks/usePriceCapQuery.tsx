@@ -1,20 +1,14 @@
-import { CapsTSVResult, TariffType, gsp } from "@/data/source";
+import { gsp } from "@/data/source";
+import { parsePriceCapTsv } from "@/utils/priceCaps";
 import { useQuery } from "@tanstack/react-query";
-import { tsv } from "d3";
 
-const usePriceCapQuery = ({ gsp = "UK" }: { gsp?: gsp | "UK" }) => {
-  const queryCapFn = (url: string) => async () => {
-    const capsTsv = await tsv(url, (d) => d as CapsTSVResult);
-    return capsTsv;
-  };
-
-  const caps = useQuery({
-    queryKey: ["getCaps", gsp],
-    queryFn: queryCapFn(
-      "https://gist.githubusercontent.com/edward-designer/232d54ace5006183d873e9eebcf82da2/raw/energy_price_caps.tsv"
-    ),
+export function usePriceCapQuery(_options: { gsp?: gsp | "UK" } = {}) {
+  return useQuery({
+    queryKey: ["getCaps"],
+    queryFn: async ({ signal }) => {
+      const response = await fetch("/data/price-caps.tsv", { signal });
+      if (!response.ok) throw new Error("Unable to load price cap data");
+      return parsePriceCapTsv(await response.text());
+    },
   });
-  return caps;
-};
-
-export default usePriceCapQuery;
+}
