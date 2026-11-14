@@ -111,7 +111,7 @@ test("UtilityPrices regions map to the correct GSPs and retain source units with
       "_E",
       "_M",
       "GB",
-    ]
+    ],
   );
   deepStrictEqual(
     update.rows.find((row) => row.Region === "_A"),
@@ -122,7 +122,7 @@ test("UtilityPrices regions map to the correct GSPs and retain source units with
       G: "7.91",
       ES: "51.84",
       GS: "29.34",
-    }
+    },
   );
   deepStrictEqual(
     update.rows.find((row) => row.Region === "GB"),
@@ -133,7 +133,7 @@ test("UtilityPrices regions map to the correct GSPs and retain source units with
       G: "7.97",
       ES: "54.83",
       GS: "29.68",
-    }
+    },
   );
   deepStrictEqual(update.metadata.attribution, fixture().regions.attribution);
 });
@@ -169,6 +169,28 @@ test("changed units, payment methods, invalid rates and mismatched periods or VA
   const vat = fixture();
   vat.summary.vatBasis = "Different VAT basis";
   throws(() => parseUtilityPricesUpdate(vat), /disagree/);
+});
+
+test("missing standing charges and numeric-string API rates are rejected", () => {
+  const { regions, summary } = fixture();
+  const invalidGasRates = [
+    { unitRatePencePerKwh: 7.97 },
+    { unitRatePencePerKwh: "7.97", standingChargePencePerDay: 29.68 },
+  ];
+  for (const gas of invalidGasRates) {
+    throws(() =>
+      parseUtilityPricesUpdate({
+        regions,
+        summary: {
+          ...summary,
+          data: {
+            ...summary.data,
+            gbAverage: { ...summary.data.gbAverage, gas },
+          },
+        },
+      }),
+    );
+  }
 });
 
 test("new snapshots preserve history and unknown legacy standing charges, with deterministic output", () => {
@@ -209,16 +231,16 @@ test("corrections replace the matching period without losing earlier records, an
   const correction = {
     ...update,
     rows: update.rows.map((row) =>
-      row.Region === "_A" ? { ...row, E: "27.25" } : row
+      row.Region === "_A" ? { ...row, E: "27.25" } : row,
     ),
   };
   const corrected = mergePriceCapUpdate({ ...merged, update: correction });
   deepStrictEqual(parsePriceCapTsv(corrected.text).length, 16);
   deepStrictEqual(
     parsePriceCapTsv(corrected.text).find(
-      (row) => row.Date === "2026-10-01" && row.Region === "_A"
+      (row) => row.Date === "2026-10-01" && row.Region === "_A",
     )?.E,
-    "27.25"
+    "27.25",
   );
   const older = fixture();
   older.regions.period = {
@@ -232,7 +254,7 @@ test("corrections replace the matching period without losing earlier records, an
         ...corrected,
         update: parseUtilityPricesUpdate(older),
       }),
-    /older cap period/
+    /older cap period/,
   );
 });
 
@@ -243,12 +265,12 @@ test("damaged stored data fails validation instead of silently dropping records"
     () =>
       parsePriceCapTsv(
         PRICE_CAP_COLUMNS +
-          "\n_A\t2026-04-01\t24.7\t5.65\t\t\n_A\t2026-04-01\t24.7\t5.65\t\t"
+          "\n_A\t2026-04-01\t24.7\t5.65\t\t\n_A\t2026-04-01\t24.7\t5.65\t\t",
       ),
-    /Duplicate/
+    /Duplicate/,
   );
   throws(() =>
-    parsePriceCapTsv(PRICE_CAP_COLUMNS + "\n_A\tinvalid\t24.7\t5.65\t\t")
+    parsePriceCapTsv(PRICE_CAP_COLUMNS + "\n_A\tinvalid\t24.7\t5.65\t\t"),
   );
 });
 
@@ -262,20 +284,20 @@ test("both API requests receive cancellation, and failed requests do not return 
     urls.push(url);
     return new Response(
       JSON.stringify(
-        url === PRICE_CAP_REGIONS_URL ? data.regions : data.summary
-      )
+        url === PRICE_CAP_REGIONS_URL ? data.regions : data.summary,
+      ),
     );
   };
   deepStrictEqual(
     await fetchUtilityPricesUpdate({ fetchPage, signal }),
-    parseUtilityPricesUpdate(data)
+    parseUtilityPricesUpdate(data),
   );
   deepStrictEqual(urls, [PRICE_CAP_REGIONS_URL, PRICE_CAP_SUMMARY_URL]);
   await rejects(
     fetchUtilityPricesUpdate({
       fetchPage: async () => new Response(null, { status: 503 }),
     }),
-    /HTTP 503/
+    /HTTP 503/,
   );
   const aborted = new DOMException("Cancelled", "AbortError");
   await rejects(
@@ -284,16 +306,16 @@ test("both API requests receive cancellation, and failed requests do not return 
         throw aborted;
       },
     }),
-    (error) => error === aborted
+    (error) => error === aborted,
   );
 });
 
 test("committed snapshots have valid rows, provenance and complete UtilityPrices periods", () => {
   const rows = parsePriceCapTsv(
-    readFileSync("public/data/price-caps.tsv", "utf8")
+    readFileSync("public/data/price-caps.tsv", "utf8"),
   );
   const sources = priceCapSourcesSchema.parse(
-    JSON.parse(readFileSync("public/data/price-cap-sources.json", "utf8"))
+    JSON.parse(readFileSync("public/data/price-cap-sources.json", "utf8")),
   );
   ok(rows.length > 0);
   for (const update of sources.updates) {
@@ -318,7 +340,7 @@ test("committed snapshots have valid rows, provenance and complete UtilityPrices
         "_M",
         "_N",
         "_P",
-      ]
+      ],
     );
   }
 });
