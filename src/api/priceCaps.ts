@@ -100,7 +100,11 @@ export function parseUtilityPricesUpdate({
   const seen = new Set<string>();
   const rows = regions.data.regions.map((region) => {
     const code = regionCodes[region.slug];
-    if (!Object.hasOwn(regionCodes, region.slug) || !code || seen.has(code))
+    if (
+      !Object.prototype.hasOwnProperty.call(regionCodes, region.slug) ||
+      !code ||
+      seen.has(code)
+    )
       throw new Error("UtilityPrices returned unknown or duplicate regions");
     seen.add(code);
     return makeRow({ Region: code, rates: region });
