@@ -1,5 +1,5 @@
 import { gsp } from "@/data/source";
-import usePriceCapQuery from "./usePriceCapQuery";
+import { usePriceCapQuery } from "./usePriceCapQuery";
 
 const useCurrentLocationPriceCapQuery = ({
   gsp,

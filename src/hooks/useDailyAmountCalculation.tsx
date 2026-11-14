@@ -7,7 +7,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useContext } from "react";
 import createTariffQuery from "../utils/createTariffQuery";
 import useConsumptionData from "./useConsumptionData";
-import usePriceCapQuery from "./usePriceCapQuery";
+import { usePriceCapQuery } from "./usePriceCapQuery";
 
 interface IMeterData {
   consumption: number;

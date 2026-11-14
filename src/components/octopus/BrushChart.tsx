@@ -51,7 +51,7 @@ import {
 } from "../../utils/helpers";
 
 import Loading from "@/components/Loading";
-import usePriceCapQuery from "@/hooks/usePriceCapQuery";
+import { usePriceCapQuery } from "@/hooks/usePriceCapQuery";
 import ErrorMessage from "./ErrorMessage";
 import { HiVizContext } from "@/context/hiViz";
 

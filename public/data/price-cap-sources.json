@@ -1,0 +1,50 @@
+{
+  "legacySource": "https://gist.githubusercontent.com/edward-designer/232d54ace5006183d873e9eebcf82da2/raw/energy_price_caps.tsv",
+  "updates": [
+    {
+      "period": {
+        "effectiveFrom": "2026-10-01",
+        "effectiveTo": "2026-12-31"
+      },
+      "retrievedAt": "2026-10-11",
+      "vatBasis": "Rates include VAT where charged: electricity 0% VAT (temporary zero rate 2026-10-01 to 2027-06-30); gas includes 5% VAT.",
+      "sources": [
+        {
+          "title": "Ofgem: changes to the energy price cap (timetable)",
+          "url": "https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-october-and-31-december-2026",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: energy price cap announcement",
+          "url": "https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-4-october-2026",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: typical domestic consumption values decision (PDF)",
+          "url": "https://www.ofgem.gov.uk/sites/default/files/2026-05/Review%20of%20typical%20domestic%20consumption%20values%20decision.pdf",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: energy price cap cap tables (PDF)",
+          "url": "https://www.ofgem.gov.uk/sites/default/files/2026-08/17a-PDF-Cap-Tables.pdf",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: summary of changes to the energy price cap (PDF)",
+          "url": "https://www.ofgem.gov.uk/sites/default/files/2026-08/Summary-of-changes-to-energy-price-cap-1-October-to-31-December-2026.pdf",
+          "publisher": "Ofgem"
+        },
+        {
+          "title": "Ofgem: energy price cap unit rates and standing charges",
+          "url": "https://www.ofgem.gov.uk/your-energy-supply/your-energy-bill/energy-price-cap-unit-rates-and-standing-charges",
+          "publisher": "Ofgem"
+        }
+      ],
+      "attribution": {
+        "text": "Data: UtilityPrices (https://utilityprices.co.uk/energy-price-cap), from Ofgem. Licensed under CC BY 4.0. Contains public sector information licensed under the Open Government Licence v3.0.",
+        "url": "https://utilityprices.co.uk/energy-price-cap"
+      },
+      "licence": "CC-BY-4.0"
+    }
+  ]
+}

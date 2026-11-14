@@ -36,7 +36,7 @@ import {
 
 import { EnergyIcon } from "./EnergyIcon";
 import ErrorMessage from "./ErrorMessage";
-import usePriceCapQuery from "@/hooks/usePriceCapQuery";
+import { usePriceCapQuery } from "@/hooks/usePriceCapQuery";
 
 interface IMapChartCapsChart {
   type: keyof typeof ENERGY_TYPE;

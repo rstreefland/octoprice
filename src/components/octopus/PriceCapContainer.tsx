@@ -4,7 +4,7 @@ import { useContext } from "react";
 
 import { UserContext } from "@/context/user";
 import { gsp } from "@/data/source";
-import usePriceCapQuery from "@/hooks/usePriceCapQuery";
+import { usePriceCapQuery } from "@/hooks/usePriceCapQuery";
 import Remark from "./Remark";
 import { EnergyIcon } from "./EnergyIcon";
 import Badge from "./Badge";
@@ -44,7 +44,7 @@ const PriceCapContainer = () => {
         <div className="flex items-center justify-center font-display">
           <div className="h-14 rounded-md px-3 py-2 ring-offset-background focus:outline-none [&amp;>h1>span]:line-clamp-1 [&amp;>span]:line-clamp-1 w-auto max-w-full text-[clamp(20px,7vw,80px)] text-accentBlue-400 flex items-center justify-center">
             <h1 className="overflow-hidden [&amp;>*]:whitespace-pre  [&amp;>*]:text-ellipsis  [&amp;>*]:overflow-hidden  [&amp;>*]:block! [&amp;>*]:max-w-full">
-              <span>2025 Jan Ofgem Price Caps</span>
+              <span>Ofgem Price Caps</span>
             </h1>
             <Remark variant="badge">
               We often hear the news telling us &quot;Households are set to pay
@@ -56,6 +56,9 @@ const PriceCapContainer = () => {
           </div>
         </div>
       </section>
+      <p className="text-sm text-white/60">
+        Direct Debit. Electricity rates are for single-rate meters.
+      </p>
       <section className="flex flex-col sm:flex-row items-stretch sm:justify-center sm:items-start gap-4 my-4">
         <div className="pricePane relative flex-1">
           <div
