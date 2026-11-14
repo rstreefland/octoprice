@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import React from "react";
 
 import { Metadata } from "next";
@@ -44,11 +45,13 @@ export const metadata: Metadata = {
 
 const FixedOutgoing = () => {
   return (
-    <div className="lg:col-[content] my-4">
-      <FixedOutgoingTariff />
-      <hr className="my-8 py-8 border-t-4 border-dotted border-theme-800"/>
-      <FixedOutgoingLiteTariff />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4">
+        <FixedOutgoingTariff />
+        <hr className="my-8 py-8 border-t-4 border-dotted border-theme-800" />
+        <FixedOutgoingLiteTariff />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

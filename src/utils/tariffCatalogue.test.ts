@@ -7,6 +7,7 @@ import legacyProducts from "./fixtures/octopusLegacyProducts.json";
 import {
   buildTariffCatalogue,
   getPairedTariffSelection,
+  getInitialTariffHoppingSelection,
   getTariffComparisonKey,
   getSupportedTariffFamily,
 } from "./tariffCatalogue";
@@ -340,5 +341,101 @@ test("the loader rejects incomplete catalogues and preserves request cancellatio
       },
     }),
     (error) => error === cancellation
+  );
+});
+
+test("historical customer tariffs pair with discovered counterparts without replacing the selected code", () => {
+  const catalogue = buildTariffCatalogue({ products, now });
+  const cases = [
+    {
+      selectedCode: "GO-VAR-BB-22-01-01",
+      isExport: false,
+      expected: {
+        importTariff: "GO-VAR-BB-22-01-01",
+        exportTariff: "OUTGOING-LITE-FIX-12M-23-09-12",
+      },
+    },
+    {
+      selectedCode: "INTELLI-VAR-23-01-01",
+      isExport: false,
+      expected: {
+        importTariff: "INTELLI-VAR-23-01-01",
+        exportTariff: "OUTGOING-FIX-12M-19-05-13",
+      },
+    },
+    {
+      selectedCode: "FLUX-IMPORT-22-01-01",
+      isExport: false,
+      expected: {
+        importTariff: "FLUX-IMPORT-22-01-01",
+        exportTariff: "FLUX-EXPORT-23-02-14",
+      },
+    },
+    {
+      selectedCode: "FLUX-EXPORT-22-01-01",
+      isExport: true,
+      expected: {
+        importTariff: "FLUX-IMPORT-23-02-14",
+        exportTariff: "FLUX-EXPORT-22-01-01",
+      },
+    },
+  ];
+  for (const { selectedCode, isExport, expected } of cases) {
+    deepStrictEqual(
+      getPairedTariffSelection({
+        ...catalogue,
+        selectedCode,
+        isExport,
+        isExporting: true,
+      }),
+      expected
+    );
+  }
+});
+
+test("tariff hopping uses saved choices ahead of defaults even when discovered versions change", () => {
+  const catalogue = buildTariffCatalogue({ products, now });
+  const saved = {
+    savedImport: "GO-VAR-BB-23-02-07",
+    savedExport: "OUTGOING-LITE-FIX-12M-23-09-12",
+  };
+  const refreshedElectricity = catalogue.electricity.map((tariff) => ({
+    ...tariff,
+    tariff: "A-NEW-PRODUCT-VERSION",
+  }));
+  deepStrictEqual(
+    getInitialTariffHoppingSelection({
+      ...catalogue,
+      ...saved,
+      isExporting: true,
+    }),
+    { importTariff: saved.savedImport, exportTariff: saved.savedExport }
+  );
+  deepStrictEqual(
+    getInitialTariffHoppingSelection({
+      ...catalogue,
+      ...saved,
+      electricity: refreshedElectricity,
+      isExporting: true,
+    }),
+    { importTariff: saved.savedImport, exportTariff: saved.savedExport }
+  );
+  deepStrictEqual(
+    getInitialTariffHoppingSelection({
+      ...catalogue,
+      savedImport: "",
+      savedExport: "",
+      isExporting: false,
+    }),
+    { importTariff: "AGILE-24-10-01", exportTariff: "" }
+  );
+  deepStrictEqual(
+    getInitialTariffHoppingSelection({
+      ...catalogue,
+      savedImport: "",
+      savedExport: "",
+      isExporting: true,
+    }),
+    { importTariff: "INTELLI-FLUX-IMPORT-23-07-14", exportTariff: "" }
   );
 });

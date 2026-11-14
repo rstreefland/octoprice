@@ -1,5 +1,4 @@
 import { ITariffToCompare } from "@/data/source";
-import { Dispatch, SetStateAction } from "react";
 import { SelectItem } from "../ui/select";
 import EnergyShiftSimTariffSelector from "./EnergyShiftSimTariffSelector";
 import { BsLightningChargeFill } from "react-icons/bs";
@@ -8,10 +7,10 @@ import { getTariffName } from "@/utils/helpers";
 interface ITrafficHoppingToolSelector {
   importTariff: string;
   importTariffs: ITariffToCompare[];
-  setImportTariff: Dispatch<SetStateAction<string>>;
+  setImportTariff: (value: string) => void;
   exportTariff: string;
   exportTariffs: ITariffToCompare[];
-  setExportTariff: Dispatch<SetStateAction<string>>;
+  setExportTariff: (value: string) => void;
   lineColor: string;
   label: string;
   isExporting?: boolean;

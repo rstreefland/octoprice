@@ -11,15 +11,15 @@ import {
 } from "../ui/select";
 import { getCategory } from "@/utils/helpers";
 import { ITariffToCompare } from "@/data/source";
-import { ReactNode, SetStateAction } from "react";
+import { ReactNode } from "react";
 
 interface IEnergyShiftSimTariffSelector {
   tariff: string;
   tariffs: ITariffToCompare[];
   isExport?: boolean;
   isExporting?: boolean;
-  changeImportTariff: (value: SetStateAction<string>) => void;
-  changeExportTariff: (value: SetStateAction<string>) => void;
+  changeImportTariff: (value: string) => void;
+  changeExportTariff: (value: string) => void;
   children: ReactNode;
 }
 

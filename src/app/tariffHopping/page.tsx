@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import TariffHoppingTool from "@/components/octopus/TariffHoppingTool";
 import { Metadata } from "next";
 
@@ -40,9 +41,11 @@ export const metadata: Metadata = {
 
 const TariffHopping = () => {
   return (
-    <div className="lg:col-[content] my-4">
-      <TariffHoppingTool />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4">
+        <TariffHoppingTool />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

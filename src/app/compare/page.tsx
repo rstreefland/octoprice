@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import CompareTariffs from "@/components/octopus/CompareTariffs";
 import { Metadata } from "next";
 
@@ -39,9 +40,11 @@ export const metadata: Metadata = {
 
 const Compare = () => {
   return (
-    <div className="lg:col-[content] my-4">
-      <CompareTariffs />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4">
+        <CompareTariffs />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

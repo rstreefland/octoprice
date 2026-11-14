@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import FluxTariff from "@/components/octopus/FluxTariff";
 import { Metadata } from "next";
 
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 };
 
 const Flux = () => {
-  return <FluxTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <FluxTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Flux;

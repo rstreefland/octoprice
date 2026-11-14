@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import AgileTariff from "@/components/octopus/AgileTariff";
 import { Metadata } from "next";
 
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 };
 
 const Agile = () => {
-  return <AgileTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <AgileTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default Agile;

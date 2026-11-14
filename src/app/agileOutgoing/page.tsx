@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import AgileOutgoingTariff from "@/components/octopus/AgileOutgoingTariff";
 import { Metadata } from "next";
 
@@ -39,7 +40,11 @@ export const metadata: Metadata = {
 };
 
 const AgileOutgoing = () => {
-  return <AgileOutgoingTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <AgileOutgoingTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default AgileOutgoing;

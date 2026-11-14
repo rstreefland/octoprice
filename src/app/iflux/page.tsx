@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import IFluxTariff from "@/components/octopus/IFluxTariff";
 import { Metadata } from "next";
 
@@ -39,7 +40,11 @@ export const metadata: Metadata = {
 };
 
 const IFlux = () => {
-  return <IFluxTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <IFluxTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default IFlux;

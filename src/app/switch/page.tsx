@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import SwitchTariffs from "@/components/octopus/SwitchTariffs";
 import { Metadata } from "next";
 
@@ -41,9 +42,11 @@ export const metadata: Metadata = {
 
 const Compare = () => {
   return (
-    <div className="lg:col-[content] my-4">
-      <SwitchTariffs />
-    </div>
+    <TariffCatalogueProvider>
+      <div className="lg:col-[content] my-4">
+        <SwitchTariffs />
+      </div>
+    </TariffCatalogueProvider>
   );
 };
 

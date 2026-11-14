@@ -1,3 +1,4 @@
+import { TariffCatalogueProvider } from "@/context/tariffCatalogue";
 import IGoTariff from "@/components/octopus/IGoTariff";
 import { Metadata } from "next";
 
@@ -39,7 +40,11 @@ export const metadata: Metadata = {
 };
 
 const IGo = () => {
-  return <IGoTariff />;
+  return (
+    <TariffCatalogueProvider>
+      <IGoTariff />
+    </TariffCatalogueProvider>
+  );
 };
 
 export default IGo;

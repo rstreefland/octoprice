@@ -40,8 +40,21 @@ const familyPatterns: Record<
 export function getSupportedTariffFamily(product: OctopusProduct) {
   if (product.is_business || product.is_prepay) return;
   if (product.brand !== "OCTOPUS_ENERGY" && product.brand !== "BULB") return;
-  return familyPatterns[product.direction].find(([, pattern]) =>
-    pattern.test(product.code)
+  return getTariffFamilyForCode({
+    code: product.code,
+    direction: product.direction,
+  });
+}
+
+export function getTariffFamilyForCode({
+  code,
+  direction,
+}: {
+  code: string;
+  direction: OctopusProduct["direction"];
+}) {
+  return familyPatterns[direction].find(([, pattern]) =>
+    pattern.test(code)
   )?.[0];
 }
 
@@ -193,27 +206,31 @@ export function getPairedTariffSelection({
   electricity: CatalogueTariff[];
   exports: CatalogueTariff[];
 }): { importTariff?: string; exportTariff?: string } {
-  const selected = [...electricity, ...exportTariffs].find(
-    (tariff) => tariff.tariff === selectedCode
-  );
-  if (isExporting && selected) {
-    if (selected.category === "Flux" || selected.category === "IFlux") {
+  const family = getTariffFamilyForCode({
+    code: selectedCode,
+    direction: isExport ? "EXPORT" : "IMPORT",
+  });
+  if (isExporting) {
+    if (family === "Flux" || family === "IFlux") {
       return {
-        importTariff: electricity.find(
-          (tariff) => tariff.category === selected.category
-        )?.tariff,
-        exportTariff:
-          exportTariffs.find((tariff) => tariff.category === selected.category)
-            ?.tariff ?? "",
+        importTariff: isExport
+          ? (electricity.find((tariff) => tariff.category === family)?.tariff ??
+            "")
+          : selectedCode,
+        exportTariff: isExport
+          ? selectedCode
+          : (exportTariffs.find((tariff) => tariff.category === family)
+              ?.tariff ?? ""),
       };
     }
-    if (selected.category === "Go" || selected.category === "IGo") {
+    if (family === "Go" || family === "IGo") {
+      const outgoingFamily = family === "Go" ? "OutgoingLite" : "Outgoing";
       const outgoing = exportTariffs.find(
         (tariff) =>
-          tariff.category === "Fixed" &&
-          (selected.category === "Go"
-            ? tariff.tariff.includes("LITE")
-            : !tariff.tariff.includes("LITE"))
+          getTariffFamilyForCode({
+            code: tariff.tariff,
+            direction: "EXPORT",
+          }) === outgoingFamily
       );
       return {
         importTariff: selectedCode,
@@ -234,4 +251,33 @@ export function getTariffComparisonKey({
   category: string;
 }) {
   return `${tariff}:${category}`;
+}
+
+export function getInitialTariffHoppingSelection({
+  savedImport,
+  savedExport,
+  isExporting,
+  electricity,
+  exports: exportTariffs,
+}: {
+  savedImport: string;
+  savedExport: string;
+  isExporting: boolean;
+  electricity: CatalogueTariff[];
+  exports: CatalogueTariff[];
+}) {
+  return {
+    importTariff:
+      savedImport ||
+      electricity.find(
+        (tariff) => tariff.category === (isExporting ? "IFlux" : "Agile")
+      )?.tariff ||
+      "",
+    exportTariff:
+      savedExport ||
+      (isExporting
+        ? (exportTariffs.find((tariff) => tariff.category === "IFlux")
+            ?.tariff ?? "")
+        : ""),
+  };
 }
