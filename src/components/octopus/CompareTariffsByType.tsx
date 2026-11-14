@@ -20,6 +20,7 @@ import { BsLightningChargeFill } from "react-icons/bs";
 import { PiSunDimFill } from "react-icons/pi";
 import AddATariff from "./AddATariffToCompare";
 import TariffDetails from "./TariffDetails";
+import { getTariffComparisonKey } from "@/utils/tariffCatalogue";
 import { getCategory } from "@/utils/helpers";
 
 const CompareTariffsByType = ({
@@ -40,21 +41,15 @@ const CompareTariffsByType = ({
 
   const typePlusExport = isExport ? "EE" : type;
 
-  const addToTariff = (tariffToAdd: (typeof allTariffs)[number]["tariff"]) => {
-    setTariffsToCompare((tariffsToCompare) => {
-      const newTariff = allTariffs.find(
-        (tariff) => tariff.tariff === tariffToAdd
-      );
-      if (newTariff) return [...tariffsToCompare, newTariff];
-      return tariffsToCompare;
-    });
+  const addToTariff = (tariffToAdd: ITariffToCompare) => {
+    setTariffsToCompare((tariffs) => [...tariffs, tariffToAdd]);
   };
 
   const setCost = useCallback(
-    (tariff: string, cost: number) =>
+    (comparisonKey: string, cost: number) =>
       setTariffsToCompare((value) =>
         [...value].map((tariffSet) => {
-          if (tariffSet.tariff === tariff) {
+          if (getTariffComparisonKey(tariffSet) === comparisonKey) {
             return { ...tariffSet, cost };
           }
           return tariffSet;
@@ -126,8 +121,8 @@ const CompareTariffsByType = ({
   const remainingTariffs = [...allTariffs].filter(
     (tariff) =>
       !tariffsToCompare
-        .map((tariff) => tariff.tariff)
-        .includes(tariff.tariff) &&
+        .map(getTariffComparisonKey)
+        .includes(getTariffComparisonKey(tariff)) &&
       !(
         currentMeterType[typePlusExport].currentContract?.tariff_code.includes(
           "E-2R"
@@ -213,7 +208,8 @@ const CompareTariffsByType = ({
               {reOrderedTariffsEToCompare.map(({ tariff, category }, ind) => {
                 return (
                   <TariffComparisionCard
-                    key={tariff}
+                    key={getTariffComparisonKey({ tariff, category })}
+                    comparisonKey={getTariffComparisonKey({ tariff, category })}
                     type={type}
                     deviceNumber={currentMeterType[typePlusExport].accessPoint}
                     serialNo={currentMeterType[typePlusExport].serialNo}

@@ -35,7 +35,12 @@ export const fetchEachApi = async ({
 
 export const fetchApi =
   (
-    urls: { tariffType?: ApiTariffType; url: string; gsp?: gsp; tag?: string }[]
+    urls: {
+      tariffType?: ApiTariffType;
+      url: string;
+      gsp?: gsp;
+      tag?: string;
+    }[]
   ) =>
   async () => {
     const allResponse = await Promise.allSettled(
@@ -246,7 +251,7 @@ export const animateNumber = async (
 export const getCategory = (tariff: string): TariffCategory => {
   if (tariff.includes("AGILE")) return "Agile";
   if (tariff.includes("SILVER")) return "Tracker";
-  if (tariff.includes("FIX")) return "Fixed";
+  if (tariff.includes("FIX") || tariff.startsWith("OUTGOING-")) return "Fixed";
   if (tariff.includes("COSY")) return "Cosy";
   if (tariff.includes("INTELLI-FLUX")) return "IFlux";
   if (tariff.includes("FLUX")) return "Flux";
@@ -274,10 +279,10 @@ export const getTariffName = (tariff: string): TariffName => {
   return tariffName === "SVT"
     ? "Variable"
     : tariffName === "E7"
-    ? "Economy-7"
-    : tariffName === "Chart"
-    ? "Super Green"
-    : tariffName;
+      ? "Economy-7"
+      : tariffName === "Chart"
+        ? "Super Green"
+        : tariffName;
 };
 
 export const fillMissingDays = (results: IConsumptionData[]) => {
@@ -467,8 +472,8 @@ export const getUnderlyingTariff = (tariff: string) => {
     getCategory(tariff) === "Agile"
       ? "AGILE-FLEX-22-11-25"
       : getCategory(tariff) === "Tracker"
-      ? "SILVER-FLEX-22-11-25"
-      : tariff;
+        ? "SILVER-FLEX-22-11-25"
+        : tariff;
   return underlyingTariff;
 };
 

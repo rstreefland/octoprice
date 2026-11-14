@@ -1,4 +1,5 @@
 "use client";
+import { useTariffCatalogue } from "@/context/tariffCatalogue";
 
 import { useContext, useEffect, useState } from "react";
 
@@ -8,8 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-import { TRACKER } from "@/data/source";
 
 import MapChart from "@/components/octopus/MapChart";
 import { UserContext } from "@/context/user";
@@ -25,7 +24,8 @@ import Link from "next/link";
 import { MdOutlineNotificationImportant } from "react-icons/md";
 
 const TrackerTariff = () => {
-  const [tariff, setTariff] = useState("SILVER-23-12-06");
+  const { tracker: TRACKER } = useTariffCatalogue();
+  const [tariff, setTariff] = useState(TRACKER[0].code);
   const { value, setValue } = useContext(UserContext);
   const { gsp, trackerCode } = value;
   useContext(WindowResizeContext);
@@ -51,11 +51,9 @@ const TrackerTariff = () => {
         >
           <Remark variant="badge">
             <span className="text-accentPink-500 font-bold pr-2">
-              Octopus has moved most Tracker users to the latest{" "}
-              <span className="text-accentPink-500">Tracker Dec 2023</span> from
-              15Feb onwards. Congratulations if you are the lucky few ones who
-              still stay on the cheaper previous Tracker versions, this page
-              automatically show you the correct version.
+              Choose your Tracker version to see its rates. The latest available
+              version is selected by default, and your saved selection takes
+              precedence.
             </span>
           </Remark>
         </TariffSelect>
