@@ -10,22 +10,11 @@ import Header from "@/components/Header";
 import { PriceCapAttribution } from "@/components/octopus/PriceCapAttribution";
 import Toast from "@/components/Toast";
 
-import { Advent_Pro, Roboto } from "next/font/google";
 import { IoMdHeart } from "react-icons/io";
 
 import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
-const font = Advent_Pro({
-  weight: ["300", "400", "700"],
-  subsets: ["latin"],
-  variable: "--display-font",
-});
-const font2 = Roboto({
-  weight: "100",
-  subsets: ["latin"],
-  variable: "--digits-font",
-});
 const font3 = localFont({
   src: [
     {
@@ -115,7 +104,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <html lang="en">
         <body
-          className={`dark ${font.variable} ${font2.variable} ${font3.variable} bg-theme-950 text-white/90`}
+          className={`dark ${font3.variable} bg-theme-950 text-white/90`}
           suppressHydrationWarning
         >
           <Providers>
