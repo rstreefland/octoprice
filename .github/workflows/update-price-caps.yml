@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: update-price-caps
+  group: update-data-snapshots
   cancel-in-progress: false
 
 jobs:

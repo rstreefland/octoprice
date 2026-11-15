@@ -1,7 +1,12 @@
-import { deepStrictEqual, rejects, throws } from "node:assert";
+import { deepStrictEqual, doesNotThrow, rejects, throws } from "node:assert";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fetchOctopusProducts, parseProductPage } from "../api/octopusProducts";
-import { loadTariffCatalogue } from "../api/tariffCatalogue";
+import {
+  discoverTariffCatalogue,
+  loadTariffCatalogue,
+  TARIFF_CATALOGUE_SNAPSHOT_URL,
+} from "../api/tariffCatalogue";
 import legacyTariffs from "./fixtures/legacyTariffs.json";
 import legacyProducts from "./fixtures/octopusLegacyProducts.json";
 import {
@@ -10,6 +15,9 @@ import {
   getInitialTariffHoppingSelection,
   getTariffComparisonKey,
   getSupportedTariffFamily,
+  parseTariffCatalogue,
+  tariffSourcesSchema,
+  validateTariffCatalogueUpdate,
 } from "./tariffCatalogue";
 
 const products = parseProductPage({
@@ -29,7 +37,7 @@ test("every reachable legacy product retains its tariff category and direction",
       if (!("tariff" in tariff)) continue;
       if (tariff.tariff === "INTELLI-FLUX-EXPORT-23-07-14") continue;
       const product = products.find(
-        (product) => product.code === tariff.tariff
+        (product) => product.code === tariff.tariff,
       )!;
       const family = getSupportedTariffFamily(product);
       const category =
@@ -39,7 +47,7 @@ test("every reachable legacy product retains its tariff category and direction",
         {
           category: tariff.category,
           direction: list === "EETARIFFS" ? "EXPORT" : "IMPORT",
-        }
+        },
       );
     }
   }
@@ -53,10 +61,10 @@ test("all historical Agile and Tracker selections remain discoverable", () => {
     deepStrictEqual(
       list.map((plan) =>
         getSupportedTariffFamily(
-          products.find((product) => product.code === plan.code)!
-        )
+          products.find((product) => product.code === plan.code)!,
+        ),
       ),
-      list.map(() => family)
+      list.map(() => family),
     );
   }
 });
@@ -83,10 +91,10 @@ test("business, prepay, other suppliers and unsupported smart variants are exclu
   deepStrictEqual(
     unsupported.map((product) =>
       getSupportedTariffFamily(
-        parseProductPage({ results: [product], next: null }).results[0]
-      )
+        parseProductPage({ results: [product], next: null }).results[0],
+      ),
     ),
-    unsupported.map(() => undefined)
+    unsupported.map(() => undefined),
   );
 });
 
@@ -102,12 +110,12 @@ test("catalogue fetching follows pagination and deduplicates products", async ()
       ? productPage([agile])
       : productPage(
           [agile, { ...agile, code: "BUSINESS", is_business: true }],
-          next
+          next,
         );
   };
   deepStrictEqual(
     await fetchOctopusProducts({ fetchPage, signal, historical: true }),
-    [agile, { ...agile, code: "BUSINESS", is_business: true }]
+    [agile, { ...agile, code: "BUSINESS", is_business: true }],
   );
   deepStrictEqual(urls, [
     "https://api.octopus.energy/v1/products/?brand=OCTOPUS_ENERGY&is_business=false&is_prepay=false&is_historical=true",
@@ -120,19 +128,19 @@ test("failed requests and invalid pages fail rather than publish partial tariffs
     fetchOctopusProducts({
       fetchPage: async () => new Response(null, { status: 503 }),
     }),
-    /Unable to load/
+    /Unable to load/,
   );
   await rejects(
     fetchOctopusProducts({
       fetchPage: async () => productPage([], "https://example.com/products/"),
     }),
-    /invalid catalogue page link/
+    /invalid catalogue page link/,
   );
   await rejects(
     fetchOctopusProducts({
       fetchPage: async (input) => productPage([], String(input)),
     }),
-    /invalid catalogue page link/
+    /invalid catalogue page link/,
   );
   for (const page of [
     null,
@@ -157,11 +165,11 @@ test("discovery reproduces each hardcoded comparison list when given its origina
     "electricity" | "gas" | "exports",
   ][]) {
     const expected = legacyTariffs[legacyName].filter(
-      (tariff) => tariff.tariff !== "INTELLI-FLUX-EXPORT-23-07-14"
+      (tariff) => tariff.tariff !== "INTELLI-FLUX-EXPORT-23-07-14",
     );
     const catalogue = buildTariffCatalogue({
       products: products.filter((product) =>
-        expected.some((tariff) => tariff.tariff === product.code)
+        expected.some((tariff) => tariff.tariff === product.code),
       ),
       now,
     });
@@ -180,7 +188,7 @@ test("all previously selectable Agile and Tracker codes and maximum rates surviv
   ]) {
     deepStrictEqual(
       actual.map(({ code, cap }) => ({ code, cap })),
-      expected.map(({ code, cap }) => ({ code, cap }))
+      expected.map(({ code, cap }) => ({ code, cap })),
     );
   }
 });
@@ -227,7 +235,7 @@ test("simulation pairing uses actual discovered codes rather than inventing impo
     ["Flux", "FLUX-EXPORT-23-02-14"],
   ]) {
     const selected = catalogue.electricity.find(
-      (tariff) => tariff.category === category
+      (tariff) => tariff.category === category,
     )!;
     deepStrictEqual(
       getPairedTariffSelection({
@@ -236,7 +244,7 @@ test("simulation pairing uses actual discovered codes rather than inventing impo
         isExport: false,
         isExporting: true,
       }),
-      { importTariff: selected.tariff, exportTariff: expectedExport }
+      { importTariff: selected.tariff, exportTariff: expectedExport },
     );
   }
   deepStrictEqual(
@@ -246,7 +254,7 @@ test("simulation pairing uses actual discovered codes rather than inventing impo
       isExport: false,
       isExporting: true,
     }),
-    { importTariff: "saved-historical-tariff" }
+    { importTariff: "saved-historical-tariff" },
   );
   deepStrictEqual(
     getPairedTariffSelection({
@@ -255,7 +263,7 @@ test("simulation pairing uses actual discovered codes rather than inventing impo
       isExport: false,
       isExporting: true,
     }),
-    { importTariff: "INTELLI-FLUX-IMPORT-23-07-14", exportTariff: "" }
+    { importTariff: "INTELLI-FLUX-IMPORT-23-07-14", exportTariff: "" },
   );
 });
 
@@ -265,7 +273,7 @@ test("single-rate Flexible and Economy 7 comparisons have distinct identities", 
       getTariffComparisonKey({ tariff: "VAR-22-11-01", category: "SVT" }),
       getTariffComparisonKey({ tariff: "VAR-22-11-01", category: "E7" }),
     ],
-    ["VAR-22-11-01:SVT", "VAR-22-11-01:E7"]
+    ["VAR-22-11-01:SVT", "VAR-22-11-01:E7"],
   );
 });
 
@@ -283,7 +291,7 @@ test("Zod validates required API fields and strips unused enrichment", () => {
       ],
       next: null,
     }),
-    { results: [agile], next: null }
+    { results: [agile], next: null },
   );
   for (const invalid of [
     { ...agile, code: "" },
@@ -294,7 +302,7 @@ test("Zod validates required API fields and strips unused enrichment", () => {
   ]) {
     throws(
       () => parseProductPage({ results: [invalid], next: null }),
-      /invalid product catalogue/
+      /invalid product catalogue/,
     );
   }
   const renamed = parseProductPage({
@@ -304,7 +312,7 @@ test("Zod validates required API fields and strips unused enrichment", () => {
   deepStrictEqual(getSupportedTariffFamily(renamed), "Agile");
 });
 
-test("the loader merges current and archived products before discovering supported tariffs", async () => {
+test("the discovery loader merges current and archived products before discovering supported tariffs", async () => {
   const signal = new AbortController().signal;
   const currentAgile = { ...agile, full_name: "Current API label" };
   const fetchPage: typeof fetch = async (input, options) => {
@@ -316,31 +324,31 @@ test("the loader merges current and archived products before discovering support
         ])
       : productPage([currentAgile]);
   };
-  const catalogue = await loadTariffCatalogue({ signal, fetchPage });
+  const catalogue = await discoverTariffCatalogue({ signal, fetchPage });
   deepStrictEqual(catalogue.agile[0].name, "Current API label");
   deepStrictEqual(
     catalogue.agile.map((plan) => plan.code),
-    legacyTariffs.AGILE.map((plan) => plan.code)
+    legacyTariffs.AGILE.map((plan) => plan.code),
   );
   deepStrictEqual(
     catalogue.electricity.map((tariff) => tariff.category),
-    ["SVT", "Tracker", "Agile", "Cosy", "Fixed", "Flux", "IFlux", "Go", "IGo"]
+    ["SVT", "Tracker", "Agile", "Cosy", "Fixed", "Flux", "IFlux", "Go", "IGo"],
   );
 });
 
-test("the loader rejects incomplete catalogues and preserves request cancellation", async () => {
+test("the discovery loader rejects incomplete catalogues and preserves request cancellation", async () => {
   await rejects(
-    loadTariffCatalogue({ fetchPage: async () => productPage([agile]) }),
-    /incomplete tariff catalogue/
+    discoverTariffCatalogue({ fetchPage: async () => productPage([agile]) }),
+    /incomplete tariff catalogue/,
   );
   const cancellation = new DOMException("Request cancelled", "AbortError");
   await rejects(
-    loadTariffCatalogue({
+    discoverTariffCatalogue({
       fetchPage: async () => {
         throw cancellation;
       },
     }),
-    (error) => error === cancellation
+    (error) => error === cancellation,
   );
 });
 
@@ -388,7 +396,7 @@ test("historical customer tariffs pair with discovered counterparts without repl
         isExport,
         isExporting: true,
       }),
-      expected
+      expected,
     );
   }
 });
@@ -409,7 +417,7 @@ test("tariff hopping uses saved choices ahead of defaults even when discovered v
       ...saved,
       isExporting: true,
     }),
-    { importTariff: saved.savedImport, exportTariff: saved.savedExport }
+    { importTariff: saved.savedImport, exportTariff: saved.savedExport },
   );
   deepStrictEqual(
     getInitialTariffHoppingSelection({
@@ -418,7 +426,7 @@ test("tariff hopping uses saved choices ahead of defaults even when discovered v
       electricity: refreshedElectricity,
       isExporting: true,
     }),
-    { importTariff: saved.savedImport, exportTariff: saved.savedExport }
+    { importTariff: saved.savedImport, exportTariff: saved.savedExport },
   );
   deepStrictEqual(
     getInitialTariffHoppingSelection({
@@ -427,7 +435,7 @@ test("tariff hopping uses saved choices ahead of defaults even when discovered v
       savedExport: "",
       isExporting: false,
     }),
-    { importTariff: "AGILE-24-10-01", exportTariff: "" }
+    { importTariff: "AGILE-24-10-01", exportTariff: "" },
   );
   deepStrictEqual(
     getInitialTariffHoppingSelection({
@@ -436,6 +444,184 @@ test("tariff hopping uses saved choices ahead of defaults even when discovered v
       savedExport: "",
       isExporting: true,
     }),
-    { importTariff: "INTELLI-FLUX-IMPORT-23-07-14", exportTariff: "" }
+    { importTariff: "INTELLI-FLUX-IMPORT-23-07-14", exportTariff: "" },
+  );
+});
+
+test("the static snapshot loader fetches and parses the committed catalogue", async () => {
+  const signal = new AbortController().signal;
+  const mockCatalogue = buildTariffCatalogue({ products, now });
+  let requestCount = 0;
+  const fetchPage: typeof fetch = async (input, options) => {
+    requestCount += 1;
+    deepStrictEqual(input, TARIFF_CATALOGUE_SNAPSHOT_URL);
+    deepStrictEqual(options?.signal, signal);
+    return new Response(JSON.stringify(mockCatalogue));
+  };
+  const result = await loadTariffCatalogue({ signal, fetchPage });
+  deepStrictEqual(result, mockCatalogue);
+  deepStrictEqual(requestCount, 1);
+});
+
+test("the static snapshot loader handles HTTP failures, invalid payloads and request cancellation", async () => {
+  await rejects(
+    loadTariffCatalogue({
+      fetchPage: async () => new Response("Not found", { status: 404 }),
+    }),
+    /Unable to load Octopus tariffs/,
+  );
+  await rejects(
+    loadTariffCatalogue({
+      fetchPage: async () => new Response(JSON.stringify({ invalid: true })),
+    }),
+    /invalid tariff catalogue/,
+  );
+  const cancellation = new DOMException("Request cancelled", "AbortError");
+  await rejects(
+    loadTariffCatalogue({
+      fetchPage: async () => {
+        throw cancellation;
+      },
+    }),
+    (error) => error === cancellation,
+  );
+});
+
+test("tariffCatalogueSchema and tariffSourcesSchema validate shape and reject corrupt fields", () => {
+  const valid = buildTariffCatalogue({ products, now });
+  deepStrictEqual(parseTariffCatalogue(valid), valid);
+
+  const missingVariable = { ...valid, variableCode: "" };
+  throws(
+    () => parseTariffCatalogue(missingVariable),
+    /invalid tariff catalogue/,
+  );
+
+  const emptyElectricity = { ...valid, electricity: [] };
+  throws(
+    () => parseTariffCatalogue(emptyElectricity),
+    /invalid tariff catalogue/,
+  );
+
+  const validSources = {
+    retrievedAt: "2026-11-14T19:35:00.000Z",
+    endpoint: "https://api.octopus.energy/v1/products/",
+    brand: "OCTOPUS_ENERGY",
+    electricityCount: 9,
+    gasCount: 3,
+    exportsCount: 4,
+    agileCount: 4,
+    trackerCount: 8,
+    variableCode: "VAR-22-11-01",
+  };
+  deepStrictEqual(tariffSourcesSchema.parse(validSources), validSources);
+
+  throws(() =>
+    tariffSourcesSchema.parse({ ...validSources, retrievedAt: "not-a-date" }),
+  );
+  throws(() =>
+    tariffSourcesSchema.parse({ ...validSources, endpoint: "not-a-url" }),
+  );
+  throws(() =>
+    tariffSourcesSchema.parse({ ...validSources, electricityCount: -1 }),
+  );
+});
+
+test("the committed tariff catalogue and sources snapshots are valid and complete", () => {
+  const catalogueText = readFileSync(
+    "public/data/tariff-catalogue.json",
+    "utf8",
+  );
+  const sourcesText = readFileSync("public/data/tariff-sources.json", "utf8");
+
+  const catalogue = parseTariffCatalogue(JSON.parse(catalogueText));
+  const sources = tariffSourcesSchema.parse(JSON.parse(sourcesText));
+
+  deepStrictEqual(catalogue.electricity.length, sources.electricityCount);
+  deepStrictEqual(catalogue.gas.length, sources.gasCount);
+  deepStrictEqual(catalogue.exports.length, sources.exportsCount);
+  deepStrictEqual(catalogue.agile.length, sources.agileCount);
+  deepStrictEqual(catalogue.tracker.length, sources.trackerCount);
+  deepStrictEqual(catalogue.variableCode, sources.variableCode);
+
+  deepStrictEqual(
+    catalogue.electricity.map((tariff) => tariff.category),
+    ["SVT", "Tracker", "Agile", "Cosy", "Fixed", "Flux", "IFlux", "Go", "IGo"],
+  );
+});
+
+test("snapshot updates reject lost tariff families even when other products remain", () => {
+  const previousCatalogue = buildTariffCatalogue({ products, now });
+  const partialCatalogues = [
+    {
+      ...previousCatalogue,
+      electricity: previousCatalogue.electricity.filter(
+        (tariff) => tariff.category !== "IFlux",
+      ),
+    },
+    {
+      ...previousCatalogue,
+      gas: previousCatalogue.gas.filter(
+        (tariff) => tariff.category !== "Fixed",
+      ),
+    },
+    {
+      ...previousCatalogue,
+      exports: previousCatalogue.exports.filter(
+        (tariff) => !tariff.tariff.startsWith("OUTGOING-LITE-"),
+      ),
+    },
+  ];
+  for (const catalogue of partialCatalogues) {
+    throws(
+      () =>
+        validateTariffCatalogueUpdate({
+          previousCatalogue,
+          catalogue: parseTariffCatalogue(catalogue),
+        }),
+      /missing .* family/,
+    );
+  }
+});
+
+test("snapshot updates preserve historical Agile and Tracker selections", () => {
+  const previousCatalogue = buildTariffCatalogue({ products, now });
+  for (const catalogue of [
+    { ...previousCatalogue, agile: previousCatalogue.agile.slice(0, -1) },
+    { ...previousCatalogue, tracker: previousCatalogue.tracker.slice(0, -1) },
+  ]) {
+    throws(
+      () =>
+        validateTariffCatalogueUpdate({
+          previousCatalogue,
+          catalogue: parseTariffCatalogue(catalogue),
+        }),
+      /missing historical plan/,
+    );
+  }
+});
+
+test("snapshot updates allow new product versions and unchanged catalogues", () => {
+  const previousCatalogue = buildTariffCatalogue({ products, now });
+  doesNotThrow(() =>
+    validateTariffCatalogueUpdate({
+      previousCatalogue,
+      catalogue: previousCatalogue,
+    }),
+  );
+  const catalogue = {
+    ...previousCatalogue,
+    electricity: previousCatalogue.electricity.map((tariff) =>
+      tariff.category === "Go"
+        ? { ...tariff, tariff: "GO-VAR-26-11-15" }
+        : tariff,
+    ),
+    agile: [
+      { ...previousCatalogue.agile[0], code: "AGILE-26-11-15" },
+      ...previousCatalogue.agile,
+    ],
+  };
+  doesNotThrow(() =>
+    validateTariffCatalogueUpdate({ previousCatalogue, catalogue }),
   );
 });
