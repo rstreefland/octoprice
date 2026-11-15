@@ -60,7 +60,8 @@ Pushes to `main` and manual runs of `.github/workflows/pages.yml` build a Next.j
 static export and deploy the `out` directory using the official GitHub Pages
 actions, matching `saving-session-explorer`.
 
-Price cap snapshots are maintained by the [weekly updater](docs/price-cap-updates.md).
+Price cap snapshots are maintained by the [weekly price cap updater](docs/price-cap-updates.md).
+Tariff catalogue snapshots are maintained by the [weekly tariff catalogue updater](docs/tariff-catalogue-updates.md).
 
 Use the pnpm version declared in `package.json`:
 
@@ -79,10 +80,11 @@ required.
 
 ## Tariff discovery
 
-Tariff pages and comparison tools fetch the public Octopus product catalogue in
-the browser, including paginated historical products. React Query shares the
-catalogue across the app and caches it for an hour. No API key or scheduled build
-is needed to discover a new product version.
+Tariff pages and comparison tools load the validated snapshot from
+`public/data/tariff-catalogue.json`, avoiding dozens of paginated API requests on
+initial page load. React Query shares the catalogue across the app and caches it
+for an hour. The [weekly updater](docs/tariff-catalogue-updates.md) discovers new
+Octopus products and refreshes the snapshot on `main`.
 
 The supported domestic families are Flexible (including Economy 7), Tracker,
 Agile, Cosy, standard 12-month Fixed, Flux, Intelligent Flux, Go, Intelligent Go,

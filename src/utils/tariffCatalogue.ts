@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { OctopusProduct } from "../api/octopusProducts";
 
 export type SupportedTariffFamily =
@@ -12,6 +13,71 @@ export type SupportedTariffFamily =
   | "IGo"
   | "Outgoing"
   | "OutgoingLite";
+
+export const catalogueCategorySchema = z.enum([
+  "SVT",
+  "Tracker",
+  "Agile",
+  "Cosy",
+  "Fixed",
+  "Flux",
+  "IFlux",
+  "Go",
+  "IGo",
+]);
+
+export const catalogueTariffSchema = z.object({
+  tariff: z.string().min(1),
+  type: z.enum(["E", "G"]),
+  category: catalogueCategorySchema,
+  cost: z.number().nullable(),
+});
+
+export const cataloguePlanSchema = z.object({
+  code: z.string().min(1),
+  name: z.string(),
+  currentPlan: z.boolean(),
+  cap: z.object({
+    E: z.number(),
+    G: z.number(),
+  }),
+});
+
+export const tariffCatalogueSchema = z.object({
+  electricity: z.array(catalogueTariffSchema).min(1),
+  gas: z.array(catalogueTariffSchema).min(1),
+  exports: z.array(catalogueTariffSchema).min(1),
+  agile: z.array(cataloguePlanSchema).min(1),
+  tracker: z.array(cataloguePlanSchema).min(1),
+  variableCode: z.string().min(1),
+});
+
+export const tariffSourcesSchema = z.object({
+  retrievedAt: z.string().refine((val) => Number.isFinite(Date.parse(val))),
+  endpoint: z.string().url(),
+  brand: z.string().min(1),
+  electricityCount: z.number().int().nonnegative(),
+  gasCount: z.number().int().nonnegative(),
+  exportsCount: z.number().int().nonnegative(),
+  agileCount: z.number().int().nonnegative(),
+  trackerCount: z.number().int().nonnegative(),
+  variableCode: z.string().min(1),
+});
+
+export type TariffSources = z.infer<typeof tariffSourcesSchema>;
+export type CatalogueTariff = z.infer<typeof catalogueTariffSchema>;
+export type CataloguePlan = z.infer<typeof cataloguePlanSchema>;
+export type TariffCatalogue = z.infer<typeof tariffCatalogueSchema>;
+
+export function parseTariffCatalogue(value: unknown): TariffCatalogue {
+  const result = tariffCatalogueSchema.safeParse(value);
+  if (!result.success) {
+    throw new Error(
+      "Octopus returned an invalid tariff catalogue. Please try again.",
+    );
+  }
+  return result.data;
+}
 
 const familyPatterns: Record<
   OctopusProduct["direction"],
@@ -54,31 +120,8 @@ export function getTariffFamilyForCode({
   direction: OctopusProduct["direction"];
 }) {
   return familyPatterns[direction].find(([, pattern]) =>
-    pattern.test(code)
+    pattern.test(code),
   )?.[0];
-}
-
-export interface CatalogueTariff {
-  tariff: string;
-  type: "E" | "G";
-  category: Exclude<SupportedTariffFamily, "Outgoing" | "OutgoingLite">;
-  cost: number | null;
-}
-
-export interface CataloguePlan {
-  code: string;
-  name: string;
-  currentPlan: boolean;
-  cap: { E: number; G: number };
-}
-
-export interface TariffCatalogue {
-  electricity: CatalogueTariff[];
-  gas: CatalogueTariff[];
-  exports: CatalogueTariff[];
-  agile: CataloguePlan[];
-  tracker: CataloguePlan[];
-  variableCode: string;
 }
 
 export function buildTariffCatalogue({
@@ -122,7 +165,7 @@ export function buildTariffCatalogue({
     families.flatMap((family) => {
       const product = sortedProducts.find(
         (product) =>
-          product.direction === direction && product.family === family
+          product.direction === direction && product.family === family,
       );
       if (!product) return [];
       return [
@@ -150,7 +193,7 @@ export function buildTariffCatalogue({
           product.direction === "IMPORT" &&
           product.brand === "OCTOPUS_ENERGY" &&
           product.family === family &&
-          Date.parse(product.available_from) >= Date.parse(earliestDate)
+          Date.parse(product.available_from) >= Date.parse(earliestDate),
       )
       .map((product) => ({
         code: product.code,
@@ -193,6 +236,68 @@ export function buildTariffCatalogue({
   };
 }
 
+export function validateTariffCatalogueUpdate({
+  previousCatalogue,
+  catalogue,
+}: {
+  previousCatalogue: TariffCatalogue;
+  catalogue: TariffCatalogue;
+}) {
+  function validateFamilies({
+    previousTariffs,
+    tariffs,
+    direction,
+  }: {
+    previousTariffs: CatalogueTariff[];
+    tariffs: CatalogueTariff[];
+    direction: OctopusProduct["direction"];
+  }) {
+    const families = new Set(
+      tariffs.map((tariff) =>
+        getTariffFamilyForCode({ code: tariff.tariff, direction }),
+      ),
+    );
+    for (const tariff of previousTariffs) {
+      const family = getTariffFamilyForCode({ code: tariff.tariff, direction });
+      if (!family || !families.has(family)) {
+        throw new Error(
+          `Tariff catalogue update is missing ${direction} family for ${tariff.tariff}.`,
+        );
+      }
+    }
+  }
+
+  validateFamilies({
+    previousTariffs: previousCatalogue.electricity,
+    tariffs: catalogue.electricity,
+    direction: "IMPORT",
+  });
+  validateFamilies({
+    previousTariffs: previousCatalogue.gas,
+    tariffs: catalogue.gas,
+    direction: "IMPORT",
+  });
+  validateFamilies({
+    previousTariffs: previousCatalogue.exports,
+    tariffs: catalogue.exports,
+    direction: "EXPORT",
+  });
+
+  for (const { previousPlans, plans } of [
+    { previousPlans: previousCatalogue.agile, plans: catalogue.agile },
+    { previousPlans: previousCatalogue.tracker, plans: catalogue.tracker },
+  ]) {
+    const codes = new Set(plans.map((plan) => plan.code));
+    for (const plan of previousPlans) {
+      if (!codes.has(plan.code)) {
+        throw new Error(
+          `Tariff catalogue update is missing historical plan ${plan.code}.`,
+        );
+      }
+    }
+  }
+}
+
 export function getPairedTariffSelection({
   selectedCode,
   isExport,
@@ -230,7 +335,7 @@ export function getPairedTariffSelection({
           getTariffFamilyForCode({
             code: tariff.tariff,
             direction: "EXPORT",
-          }) === outgoingFamily
+          }) === outgoingFamily,
       );
       return {
         importTariff: selectedCode,
@@ -270,7 +375,7 @@ export function getInitialTariffHoppingSelection({
     importTariff:
       savedImport ||
       electricity.find(
-        (tariff) => tariff.category === (isExporting ? "IFlux" : "Agile")
+        (tariff) => tariff.category === (isExporting ? "IFlux" : "Agile"),
       )?.tariff ||
       "",
     exportTariff:

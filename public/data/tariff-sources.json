@@ -1,0 +1,11 @@
+{
+  "retrievedAt": "2026-11-14T19:38:11.524Z",
+  "endpoint": "https://api.octopus.energy/v1/products/",
+  "brand": "OCTOPUS_ENERGY",
+  "electricityCount": 9,
+  "gasCount": 3,
+  "exportsCount": 4,
+  "agileCount": 4,
+  "trackerCount": 8,
+  "variableCode": "VAR-22-11-01"
+}

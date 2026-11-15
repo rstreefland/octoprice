@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "tsc --outDir .test-output --module commonjs --moduleResolution node --target es2015 --skipLibCheck --strict --esModuleInterop --resolveJsonModule src/utils/demoConsumption.test.ts src/utils/tariffCatalogue.test.ts src/utils/priceCaps.test.ts && node --test .test-output/utils/demoConsumption.test.js .test-output/utils/tariffCatalogue.test.js .test-output/utils/priceCaps.test.js",
-    "update:price-caps": "tsc --outDir .test-output/price-cap-updater --module commonjs --moduleResolution node --target es2015 --skipLibCheck --strict --esModuleInterop scripts/update-price-caps.ts && node .test-output/price-cap-updater/scripts/update-price-caps.js"
+    "update:price-caps": "tsc --outDir .test-output/price-cap-updater --module commonjs --moduleResolution node --target es2015 --skipLibCheck --strict --esModuleInterop scripts/update-price-caps.ts && node .test-output/price-cap-updater/scripts/update-price-caps.js",
+    "update:tariff-catalogue": "tsc --outDir .test-output/tariff-catalogue-updater --module commonjs --moduleResolution node --target es2015 --skipLibCheck --strict --esModuleInterop scripts/update-tariff-catalogue.ts && node .test-output/tariff-catalogue-updater/scripts/update-tariff-catalogue.js"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
